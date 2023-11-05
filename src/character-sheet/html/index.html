@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+    <meta name="author" content="Colin Morris">
+    <title>Trinity Character Engine</title>
+    <link href="https://fonts.cdnfonts.com/css/futura-windows" rel="stylesheet">
+    <style>
+        html {
+            font-family: 'Futura Windows', sans-serif;
+
+        }
+
+        #generation.tabbed-interface>fieldset {
+            display: none;
+        }
+
+        input#class:checked~form fieldset#class-of-char,
+        input#basics:checked~form fieldset#basics-for-char,
+        input#paths:checked~form fieldset#path-selection,
+        input#skills:checked~form fieldset#skill-selection,
+        input#attributes:checked~form fieldset#attribute-selection,
+        input#extras:checked~form fieldset#extra-selection,
+        input#template:checked~form fieldset#template-selection,
+        input#sheet:checked~form fieldset#character-sheet {
+            display: block;
+        }
+
+        input#class:checked~form label[for=class],
+        input#basics:checked~form label[for=basics],
+        input#paths:checked~form label[for=paths],
+        input#skills:checked~form label[for=skills],
+        input#attributes:checked~form label[for=attributes],
+        input#extras:checked~form label[for=extras],
+        input#template:checked~form label[for=template],
+        input#sheet:checked~form label[for=sheet] {
+            background: green;
+        }
+
+        #class-of-char label input {
+            max-width: 0%;
+            visibility: hidden;
+        }
+
+        #class-of-char input:checked+span {
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: underline solid 3px;
+        }
+
+        #class-of-char input:not(:checked)+span {
+            cursor: pointer;
+            font-weight: lighter;
+        }
+
+        #class-of-char input:not(:checked)+span:hover {
+            cursor: pointer;
+            font-weight: inherit;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        /* Dot selectors */
+        div.skill-and-dots {
+            display: grid;
+            grid-template-columns: 7em 1fr 8em;
+            grid-template-areas: "header name dots";
+            column-gap: 3px;
+        }
+
+        div.skill-and-dots label {
+            grid-area: header;
+        }
+
+        div.skill-and-dots>repeat-selector,
+        div.skill-and-dots>type-and-select,
+        div.skill-and-dots>.custom-combobox {
+            grid-area: name;
+        }
+
+        div.skill-and-dots>dot-selector {
+            grid-area: dots;
+        }
+
+        div.just-skill {
+            display: grid;
+            grid-template-columns: 7em 1fr;
+            grid-template-areas: "header name";
+            column-gap: 3px;
+        }
+
+        div.just-skill label {
+            grid-area: header;
+        }
+
+        div.just-skill type-and-select,
+        div.just-skill textarea {
+            grid-area: name;
+        }
+
+        nav label,
+        nav.buttons a {
+            display: inline-block;
+            font-weight: bold;
+            background: #000;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #FFF;
+            padding: 8px 12px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+    </style>
+
+    <script>
+        class DotSelector extends HTMLElement {
+            constructor() {
+                super();
+
+                // Known attributes
+                this.name = "";
+                this.max = 5;
+                this.min = 0;
+                this.default = 0;
+                this.value = 0;
+
+                // Add to the Formdata event so
+                // the form can access the values
+                const form = document.querySelector('form');
+                form.addEventListener('formdata', ({ formData }) => {
+                    formData.append(this.name, this.value);
+                })
+            }
+
+            static get observedAttributes() {
+                // These attributes will be monitored for
+                // changes in the DOM
+                return ['max', 'min', 'default', 'value', "name"]
+            }
+
+            attributeChangedCallback(property, oldValue, newValue) {
+                // Called when a property changes
+                // This just sets the local property to the new one
+                if (oldValue === newValue) return;
+                this[property] = newValue;
+                if (property == "value" && this.value < this.min) {
+                    this.value = this.min;
+                }
+            }
+
+            connectedCallback() {
+                // Once this is instantiated, create the 
+                // select object
+                let thisSelect = document.createElement("SELECT"),
+                    maxPlus1 = parseInt(this.max, 10) + 1;
+                thisSelect.name = this.name;
+                for (let i = this.min; i < maxPlus1; i++) {
+                    let thisOption = document.createElement("OPTION")
+                    thisOption.value = i;
+                    thisOption.selected = (i == this.current) ? " selected" : "";
+                    thisOption.innerHTML = "&#x26AB;".repeat(i) + "&#x26AA;".repeat(this.max - i);
+                    thisSelect.appendChild(thisOption)
+                }
+
+                // This is needed to set this object's value
+                // to what it was changed to in the attribute
+                thisSelect.onchange = (x) => {
+                    this.value = x.target.value;
+                }
+
+                // Set the HTML for the custom element
+                // to this new select + event
+                this.innerHTML = "";
+                this.appendChild(thisSelect)
+
+            }
+        }
+        customElements.define('dot-selector', DotSelector);
+
+        class RepeatSelector extends HTMLElement {
+            constructor() {
+                super();
+
+                // Known attributes
+                this.name = "";
+                this.options = [];
+                this.default = "";
+                this.value = "";
+                this.id2 = "";
+                this.select = document.createElement("SELECT");
+
+                // Add to the formdata
+                const form = document.querySelector('form');
+                form.addEventListener('formdata', ({ formData }) => {
+                    formData.append(this.name, this.value);
+                })
+            }
+
+            setupOptions() {
+                this.select.innerHTML = "";
+                this.select.appendChild(document.createElement("OPTION"));
+                this.options.forEach((e) => {
+                    let thisOption = document.createElement("OPTION");
+                    thisOption.value = e;
+                    thisOption.selected = (e == this.default) ? " selected" : "";
+                    thisOption.innerText = e;
+                    this.select.appendChild(thisOption);
+                });
+            }
+            static get observedAttributes() {
+                return ['name', 'options', 'value', 'default', 'id2'];
+            }
+
+            attributeChangedCallback(property, oldValue, newValue) {
+                if (oldValue == newValue) return;
+                if (property == "options") {
+                    this.options = newValue.split("|")
+                    this.setupOptions();
+                } else {
+                    this[property] = newValue;
+                }
+            }
+
+            connectedCallback() {
+                this.select.appendChild(document.createElement("OPTION"));
+                this.select.name = this.name;
+                this.select.id = this.id2;
+                this.select.setAttribute("style", "width:100%;");
+                this.setupOptions();
+                this.select.onChange = (x) => {
+                    this.value = x.target.value;
+                }
+
+                this.innerHTML = "";
+                this.appendChild(this.select);
+            }
+        }
+        customElements.define('repeat-selector', RepeatSelector);
+
+        class TypeAndSelect extends HTMLElement {
+
+            constructor() {
+                super();
+
+                // Known attributes
+                this.name = "";
+                this.options = [];
+                this.default = "";
+                this.value = "";
+                this.id2 = "";
+                this.select = document.createElement("SELECT");
+
+                // Add to the formdata
+                const form = document.querySelector('form');
+                form.addEventListener('formdata', ({ formData }) => {
+                    formData.append(this.name, this.value);
+                })
+            }
+
+            static get observedAttributes() {
+                return ['name', 'options', 'value', 'default', 'id2'];
+            }
+
+            setupOptions() {
+                this.select.innerHTML = "";
+                this.options.forEach((e) => {
+                    let thisOption = document.createElement("OPTION");
+                    thisOption.value = e;
+                    thisOption.selected = (e == this.default) ? " selected" : "";
+                    thisOption.innerText = e;
+                    this.select.appendChild(thisOption);
+                });
+            }
+            attributeChangedCallback(property, oldValue, newValue) {
+                if (oldValue == newValue) return;
+                if (property == "options") {
+                    this[property] = newValue.split("|")
+                    console.log(this[property]);
+                    this.setupOptions();
+                } else {
+                    console.log(property, this[property]);
+                    this[property] = newValue;
+                }
+            }
+
+            filterSelect() {
+                var hint = this.value;
+                if (this.value = "") {
+                    this.select.style.display = "none";
+                } else {
+                    var foundCount = false;
+                    hint = hint.toLowerCase();
+                    for (let i = 0; i < this.select.options.length; i++) {
+                        const me = this.select.options[i];
+                        const matche = (me?.value ?? "").toLowerCase();
+                        if (matche.indexOf(hint) > -1) {
+                            me.style.display = "";
+                            foundCount = true;
+                        } else {
+                            me.style.display = "none";
+                        }
+                    };
+                    if (foundCount) {
+                        this.select.style.display = "";
+
+                    } else {
+
+                        this.select.style.display = "none";
+                    }
+                }
+            }
+            connectedCallback() {
+                let thisText = document.createElement("INPUT");
+                thisText.name = this.name;
+                thisText.id = this.id2;
+                thisText.type = "text";
+                thisText.setAttribute("style", "width:100%;")
+
+                this.select.name = this.name + "_s";
+                this.select.id = this.id2 + "_s";
+                this.select.size = "10";
+                this.select.setAttribute("style", "width:100%;display:none;");
+                this.select.addEventListener("change", (x) => {
+                    thisText.value = x.target.value;
+                    this.value = x.target.value;
+                    this.select.style.display = "none";
+                })
+                thisText.addEventListener("input", (x) => {
+                    this.value = x.target.value;
+                    this.filterSelect();
+                });
+
+                this.innerHTML = "";
+                this.appendChild(thisText);
+                this.appendChild(this.select);
+            }
+        }
+        customElements.define('type-and-select', TypeAndSelect);
+
+        class AlertBar extends HTMLElement {
+            constructor() {
+                super();
+
+                this.name = "";
+                this.message = "";
+            }
+
+            static get observedAttributes() {
+                return ['name', 'message'];
+            }
+
+            attributeChangedCallback(property, oldValue, newValue) {
+                if (oldValue == newValue) return;
+                this[property] = newValue;
+            }
+
+            connectedCallback() {
+                this.setAttribute("style", "padding:0 5px;display:inline-block;position:relative;border: thin solid black; background: black; color: white; border-radius: 5px;");
+                this.innerHTML = this.message;
+            }
+        }
+        customElements.define('alert-bar', AlertBar);
+    </script>
+</head>
+
+<body>
+    <main id="trinity" class="panel">
+        <header>
+            <h1 class="p-name">Trinity character creator</h1>
+            <nav class="buttons">
+                <a href="#">Create</a>
+                <a href="#">Load</a>
+            </nav>
+        </header>
+        <section id="introduction">
+            <h2>Introduction</h2>
+            <details>
+                <summary>Help</summary>
+
+                <p>INTRODUCTION TEXT</p>
+                <p>Ideas</p>
+                <ul>
+                    <li>Have character sheet in an extra window or able to be a beside tab to show the character as its
+                        created.</li>
+                    <li>Save user preferences (e.g. have character sheet as a tab, or beside, or other window).</li>
+                </ul>
+            </details>
+        </section>
+        <input type="radio" style="visibility:hidden;" name="tabopen" id="class">
+        <input type="radio" style="visibility:hidden;" name="tabopen" id="basics">
+        <input type="radio" style="visibility:hidden;" name="tabopen" id="paths">
+        <input type="radio" style="visibility:hidden;" name="tabopen" id="skills">
+        <input type="radio" style="visibility:hidden;" name="tabopen" id="attributes">
+        <input type="radio" style="visibility:hidden;" name="tabopen" id="template">
+        <input type="radio" style="visibility:hidden;" name="tabopen" id="extras">
+        <input type="radio" style="visibility:hidden;" name="tabopen" id="sheet">
+        <form id="generation" class="tabbed-interface">
+            <nav>
+                <label for="class">Class</label>
+                <label for="basics">Concept</label>
+                <label for="paths">Paths</label>
+                <label for="skills">Skills</label>
+                <label for="attributes">Attributes</label>
+                <label for="template">Template</label>
+                <label for="extras">Final touches</label>
+                <label for="sheet">Character sheet</label>
+            </nav>
+            <fieldset id="class-of-char">
+                <legend>Character type</legend>
+                <label><input type="radio" id="baseline" name="charclass" /><span>Talent</span></label>
+                <label><input type="radio" id="psion" name="charclass" /><span>Psion</span></label>
+                <label><input type="radio" id="nova" name="charclass" /><span>Nova</span></label>
+                <label><input type="radio" id="talent" name="charclass" /><span>Inspired</span></label>
+            </fieldset>
+            <fieldset id="basics-for-char">
+                <legend>Basics</legend>
+                <div class="just-skill">
+                    <label for="name" id="label_name">Name</label>
+                    <input type="text" id="name" name="name" value="">
+                </div>
+                <div class="just-skill">
+                    <label for="concept" id="label_concept">Concept/ RP Tips</label>
+                    <input type="text" id="concept" name="concept" value="">
+                </div>
+                <div class="just-skill">
+
+                    <label for="aspiration_short_1">Short aspiration (1)</label>
+                    <input type="text" t="" id="aspiration_short_1" name="aspiration_short_1" value="">
+                </div>
+                <div class="just-skill">
+                    <label for="aspiration_short_2">Short aspiration (2)</label>
+                    <input type="text" id="aspiration_short_2" name="aspiration_short_2" value="">
+                </div>
+                <div class="just-skill">
+                    <label for="aspiration_long">Long aspiration</label>
+                    <textarea id="aspiration_long" name="aspiration_long"></textarea>
+                </div>
+            </fieldset>
+            <fieldset id="path-selection">
+                <legend>Paths</legend>
+                <fieldset id="origin">
+                    <legend>Origin
+                        <alert-bar name="origin-skill-points" message="3 skill points left"></alert-bar>
+                        <alert-bar name="origin-edge-points" message="2 edge points left"></alert-bar>
+                    </legend>
+                    <div class="just-skill">
+                        <label for="origin_path">Path</label>
+                        <type-and-select name="origin_path" id2="origin_path" default=""
+                            options="Aeon Trinity|Lamplighters"></type-and-select>
+                    </div>
+                    </style>
+                    <div class="skill-and-dots">
+                        <label for="origin_skill_1_name">Skill (1)</label>
+                        <repeat-selector name="origin_skill_1_name" id2="origin_skill_1_name" default=""
+                            options=""></repeat-selector>
+                        <dot-selector name="origin_skill_1_value" max="5"></dot-selector>
+                    </div>
+                    <div class="skill-and-dots">
+                        <label for="origin_skill_2_name">Skill (2)</label>
+                        <repeat-selector name="origin_skill_2_name" id2="origin_skill_2_name" default=""
+                            options=""></repeat-selector>
+                        <dot-selector name="origin_skill_2_value" max="5"></dot-selector>
+                    </div>
+                    <div class="skill-and-dots">
+                        <label for="origin_skill_3_name">Skill (3)</label>
+                        <repeat-selector name="origin_skill_3_name" id2="origin_skill_3_name" default=""
+                            options=""></repeat-selector>
+                        <dot-selector name="origin_skill_3_value" max="5"></dot-selector>
+                    </div>
+                    <div class="skill-and-dots">
+                        <label for="origin_skill_4_name">Skill (4)</label>
+                        <repeat-selector name="origin_skill_4_name" id2="origin_skill_4_name" default=""
+                            options=""></repeat-selector>
+                        <dot-selector name="origin_skill_4_value" max="5"></dot-selector>
+                    </div>
+                    <div class="just-skill">
+                        <label for="origin_gca">Group, contact and access connections</label>
+                        <textarea id="origin_gca" name="origin_gca"></textarea>
+                    </div>
+                    <div class="skill-and-dots">
+                        <label for="origin_edge_1">Edge (1)</label>
+                        <type-and-select name="origin_edge_1_name" id2="origin_edge_1_name" default=""
+                            options="One|Two"></type-and-select>
+                        <dot-selector name="origin_edge_1_value" max="5"></dot-selector>
+                    </div>
+                    <div class="skill-and-dots">
+                        <label for="origin_edge_2_name">Edge (2)</label>
+                        <type-and-select name="origin_edge_2_name" id2="origin_edge_2_name" default=""
+                            options="One|Two"></type-and-select>
+                        <dot-selector name="origin_edge_2_value" max="5"></dot-selector>
+                    </div>
+                    <div class="just-skill">
+                        <label for="origin_path_condition">Path condition</label>
+                        <input type="text" id="origin_path_condition" name="origin_path_condition" value="">
+                    </div>
+                </fieldset>
+                <fieldset id="role">
+                    <legend>Role
+                        <alert-bar name="role-skill-points" message="3 skill points left"></alert-bar>
+                        <alert-bar name="role-edge-points" message="2 edge points left"></alert-bar>
+                    </legend>
+                    <div class="just-skill">
+                        <label for="role_path">Path</label>
+                        <type-and-select name="role_path" id2="role_path" default=""
+                            options="Aeon Trinity|Lamplighters"></type-and-select>
+                    </div>
+                    </style>
+                    <div class="skill-and-dots">
+                        <label for="role_skill_1_name">Skill (1)</label>
+                        <repeat-selector name="role_skill_1_name" id2="role_skill_1_name" default=""
+                            options=""></repeat-selector>
+                        <dot-selector name="role_skill_1_value" max="5"></dot-selector>
+                    </div>
+                    <div class="skill-and-dots">
+                        <label for="role_skill_2_name">Skill (2)</label>
+                        <repeat-selector name="role_skill_2_name" id2="role_skill_2_name" default=""
+                            options=""></repeat-selector>
+                        <dot-selector name="role_skill_2_value" max="5"></dot-selector>
+                    </div>
+                    <div class="skill-and-dots">
+                        <label for="role_skill_3_name">Skill (3)</label>
+                        <repeat-selector name="role_skill_3_name" id2="role_skill_3_name" default=""
+                            options=""></repeat-selector>
+                        <dot-selector name="role_skill_3_value" max="5"></dot-selector>
+                    </div>
+                    <div class="skill-and-dots">
+                        <label for="role_skill_4_name">Skill (4)</label>
+                        <repeat-selector name="role_skill_4_name" id2="role_skill_4_name" default=""
+                            options=""></repeat-selector>
+                        <dot-selector name="role_skill_4_value" max="5"></dot-selector>
+                    </div>
+                    <div class="just-skill">
+                        <label for="role_gca">Group, contact and access connections</label>
+                        <textarea id="role_gca" name="role_gca"></textarea>
+                    </div>
+                    <div class="skill-and-dots">
+                        <label for="role_edge_1">Edge (1)</label>
+                        <type-and-select name="role_edge_1_name" id2="role_edge_1_name" default=""
+                            options="One|Two"></type-and-select>
+                        <dot-selector name="role_edge_1_value" max="5"></dot-selector>
+                    </div>
+                    <div class="skill-and-dots">
+                        <label for="role_edge_2_name">Edge (2)</label>
+                        <type-and-select name="role_edge_2_name" id2="role_edge_2_name" default=""
+                            options="One|Two"></type-and-select>
+                        <dot-selector name="role_edge_2_value" max="5"></dot-selector>
+                    </div>
+                    <div class="just-skill">
+                        <label for="role_path_condition">Path condition</label>
+                        <input type="text" id="role_path_condition" name="role_path_condition" value="">
+                    </div>
+                </fieldset>
+                <fieldset id="society">
+                    <legend>Society
+                        <alert-bar name="society-skill-points" message="3 skill points left"></alert-bar>
+                        <alert-bar name="society-edge-points" message="2 edge points left"></alert-bar>
+                    </legend>
+
+                    <div class="just-skill">
+                        <label for="society_path">Path</label>
+                        <type-and-select name="society_path" id2="society_path" default=""
+                            options="Aeon Trinity|Lamplighters"></type-and-select>
+                    </div>
+                    </style>
+                    <div class="skill-and-dots">
+                        <label for="society_skill_1_name">Skill (1)</label>
+                        <repeat-selector name="society_skill_1_name" id2="society_skill_1_name" default=""
+                            options=""></repeat-selector>
+                        <dot-selector name="society_skill_1_value" max="5"></dot-selector>
+                    </div>
+                    <div class="skill-and-dots">
+                        <label for="society_skill_2_name">Skill (2)</label>
+                        <repeat-selector name="society_skill_2_name" id2="society_skill_2_name" default=""
+                            options=""></repeat-selector>
+                        <dot-selector name="society_skill_2_value" max="5"></dot-selector>
+                    </div>
+                    <div class="skill-and-dots">
+                        <label for="society_skill_3_name">Skill (3)</label>
+                        <repeat-selector name="society_skill_3_name" id2="society_skill_3_name" default=""
+                            options=""></repeat-selector>
+                        <dot-selector name="society_skill_3_value" max="5"></dot-selector>
+                    </div>
+                    <div class="skill-and-dots">
+                        <label for="society_skill_4_name">Skill (4)</label>
+                        <repeat-selector name="society_skill_4_name" id2="society_skill_4_name" default=""
+                            options=""></repeat-selector>
+                        <dot-selector name="society_skill_4_value" max="5"></dot-selector>
+                    </div>
+                    <div class="just-skill">
+                        <label for="society_gca">Group, contact and access connections</label>
+                        <textarea id="society_gca" name="society_gca"></textarea>
+                    </div>
+                    <div class="skill-and-dots">
+                        <label for="society_edge_1">Edge (1)</label>
+                        <type-and-select name="society_edge_1_name" id2="society_edge_1_name" default=""
+                            options="One|Two"></type-and-select>
+                        <dot-selector name="society_edge_1_value" max="5"></dot-selector>
+                    </div>
+                    <div class="skill-and-dots">
+                        <label for="society_edge_2_name">Edge (2)</label>
+                        <type-and-select name="society_edge_2_name" id2="society_edge_2_name" default=""
+                            options="One|Two"></type-and-select>
+                        <dot-selector name="society_edge_2_value" max="5"></dot-selector>
+                    </div>
+                    <div class="just-skill">
+                        <label for="society_path_condition">Path condition</label>
+                        <input type="text" id="society_path_condition" name="society_path_condition" value="">
+                    </div>
+                </fieldset>
+            </fieldset>
+            <fieldset id="skill-selection">
+                <legend>Skills <alert-bar name="skill_points" message="6 skill points left"></alert-bar></legend>
+                <div></div>
+            </fieldset>
+            <style>
+                #attribute-layout {
+                    display: grid;
+                    grid-template-areas: 'force intellect might presence'
+                        'finesse cunning dexterity manipulation'
+                        'resilience resolve stamina composure';
+                    grid-template-columns: 1fr 1fr 1fr 1fr;
+                }
+                #attribute-selection label.stat {
+                    display: inline-grid;
+                    grid-template-columns: 8em auto;
+                }
+                #attribute-selection label.check {
+                    display: inline-grid;
+                    grid-template-columns: 1em auto;
+                }
+            </style>
+            <fieldset id="attribute-selection">
+                <legend>Attributes</legend>
+                <div id="attribute-layout">
+                <label class="check" style="grid-area: force"><input type="checkbox" name="favoured_approach" value="force"/><span>Force</span></label>
+                <label class="check" style="grid-area: finesse"><input type="checkbox" name="favoured_approach" value="finesse"/><span>Finesse</span></label>
+                <label class="check" style="grid-area: resilience"><input type="checkbox" name="favoured_approach" value="resilience"/><span>Resilience</span></label>
+                <label class="stat" style="grid-area: intellect"><span>Intellect</span> <dot-selector min="1" max="5" default="1" value="1" name="intellect"></dot-selector></label>
+                <label class="stat" style="grid-area: cunning"><span>Cunning</span> <dot-selector min="1" max="5" default="1" value="1" name="cunning"></dot-selector></label>
+                <label class="stat" style="grid-area: resolve"><span>Resolve</span> <dot-selector min="1" max="5" default="1" value="1" name="resolve"></dot-selector></label>
+                <label class="stat" style="grid-area: might"><span>Might</span> <dot-selector min="1" max="5" default="1" value="1" name="might"></dot-selector></label>
+                <label class="stat" style="grid-area: dexterity"><span>Dexterity</span> <dot-selector min="1" max="5" default="1" value="1" name="dexterity"></dot-selector></label>
+                <label class="stat" style="grid-area: stamina"><span>Stamina</span> <dot-selector min="1" max="5" default="1" value="1" name="stamina"></dot-selector></label>
+                <label class="stat" style="grid-area: presence"><span>Presence</span> <dot-selector min="1" max="5" default="1" value="1" name="presence"></dot-selector></label>
+                <label class="stat" style="grid-area: manipulation"><span>Manipulation</span> <dot-selector min="1" max="5" default="1" value="1" name="manipulation"></dot-selector></label>
+                <label class="stat" style="grid-area: composure"><span>Composure</span> <dot-selector min="1" max="5" default="1" value="1" name="composure"></dot-selector></label>
+            </div>
+            </fieldset>
+            <fieldset id="template-selection">
+                <legend>Template</legend>
+                <div id="talent"></div>
+                <div id="psion"></div>
+                <div id="psiad"></div>
+                <div id="nova"></div>
+                <div id="inspired">
+                    <label for="moment">Moment of Inspiration</label>
+                    <textarea name="moment" id="moment"></textarea>
+                    <fieldset>
+                        <legend>Type of Inspired</legend>
+                        <label>Daredevil <input type="radio" name="inspired_type" id="daredevil" value="daredevil" /></label>
+                        <label>Mesmirist <input type="radio" name="inspired_type" id="mesmirist" value="mesmirist" /></label>
+                        <label>Stalwart <input type="radio" name="inspired_type" id="stalwart" value="stalwart" /></label>
+                    </fieldset>
+                    <fieldset>
+                        <legend>Facets</legend>
+                    </fieldset>
+                    <fieldset>
+                        <legend>Gifts</legend>
+                    </fieldset>
+                </div>
+            </fieldset>
+            <fieldset id="extra-selection">
+                <legend>Extras</legend>
+            </fieldset>
+            <fieldset id="character-sheet">
+                <legend>Character sheet</legend>
+                <p>[Show in New Window] [Show in Beside Column] [Show in this Tab]</p>
+            </fieldset>
+        </form>
+        <style>
+            footer {
+                display: grid;
+                grid-template-columns: 150px auto;
+            }
+
+            footer div p:first-child {
+                margin-top: 0;
+            }
+        </style>
+        <footer style="padding:10px;color:black;display:grid;">
+            <div style="text-align:center;">
+                <img src="https://vonexplaino.com/code/trinity-character-creator/img/OPP-Metal.1.png" /><br />2018
+            </div>
+            <div>
+                <p>Used under license from Onyx Path Publishing, Inc. No part of this product may be reproduced without
+                    the
+                    permission of the Licensor.<br />
+
+                </p>
+                <p>Trinity Continuum, Trinity Continuum: Core, and Trinity Continuum: Aeon are trademarks of Onyx Path
+                    Publishing. All rights reserved. All characters, names, places and text herein are copyrighted by
+                    Onyx
+                    Path Publishing.</p>
+                <p>The mention of or reference to any company or product on this site is not a challenge to the
+                    trademark or
+                    copyright concerned.</p>
+                <p>This project and all elements are fiction and intended for entertainment purposes only. Reader
+                    discretion
+                    is advised.</p>
+                <p>Check out the Onyx Path at <a href="http://www.theonyxpath.com"
+                        target="_blank">http://www.theonyxpath.com</a></p>
+            </div>
+            <nav>
+                <a href="/">Creator homepage</a>
+            </nav>
+        </footer>
+    </main>
+
+    <script>
+        class StandardPath {
+            constructor() {
+                this.name = "";
+                this.skills = [
+                    { "name": "", "dots": 0 },
+                    { "name": "", "dots": 0 },
+                    { "name": "", "dots": 0 }
+                ];
+                this.contacts = "";
+                this.edges = [
+
+                    { "name": "", "dots": 0 },
+                    { "name": "", "dots": 0 },
+                ];
+                this.condition = "";
+            }
+        }
+        class BaselineCharacter {
+            constructor() {
+                this.basics = {
+                    "splat": "",
+                    "name": "",
+                    "concept": "",
+                    "short_aspirations": ["", ""],
+                    "long_aspiration": "",
+                }
+                this.paths = [
+                    { "name": "origin", "path": new StandardPath() },
+                    { "name": "role", "path": new StandardPath() },
+                    { "name": "society", "path": new StandardPath() }
+                ]
+                this.skills = {
+                    "Aim": 0,
+                    "Athletics": 0,
+                    "Close Combat": 0,
+                    "Culture": 0,
+                    "Empathy": 0,
+                    "Enigmas": 0,
+                    "Humanities": 0,
+                    "Integrity": 0,
+                    "Larceny": 0,
+                    "Medicine": 0,
+                    "Persuasion": 0,
+                    "Pilot": 0,
+                    "Science": 0,
+                    "Survival": 0,
+                    "Technology": 0
+                }
+                this.attributes = {
+                    "Mental": {
+                        "Intellect": 1,
+                        "Cunning": 1,
+                        "Resolve": 1
+                    },
+                    "Physical": {
+                        "Might": 1,
+                        "Dexterity": 1,
+                        "Stamina": 1
+                    },
+                    "Social": {
+                        "Presence": 1,
+                        "Manipulation": 1,
+                        "Composure": 1
+                    }
+                }
+                this.attribute_ranking = []
+                this.favoured = ""
+                this.updateSkills()
+            }
+
+            updateSkills() {
+                // Paths selection
+                let skillsBar = Object.keys(this.skills).join("|")
+                document.querySelectorAll("repeat-selector[name*='_skill_']").forEach((x) => {
+                    x.setAttribute("options", skillsBar);
+                });
+
+                let skillBox = document.querySelector("#skill-selection div")
+                skillBox.innerHTML = "";
+                // Skill selection
+                Object.keys(this.skills).forEach((x) => {
+                    skillBox.innerHTML += `
+                <div class="skill-and-dots">
+                    <span>${x}</span>
+                    <input type="text" name="speciality[${x}]" value="" />
+                    <dot-selector name="skill_value[${x}]" max="5"></dot-selector>
+                </div>`;
+                });
+            }
+        }
+        class NovaCharacter extends BaselineCharacter {
+            constructor() {
+                super();
+            }
+
+        }
+        class PsiCharacter extends BaselineCharacter {
+            constructor() {
+                super();
+            }
+
+
+        }
+        class TalentCharacter extends BaselineCharacter {
+            constructor() {
+                super();
+            }
+
+
+        }
+        var character = new BaselineCharacter();
+        // Idea - don't have inherited classes, have extentions
+        // just for the template/ final touches for each
+
+
+    </script>
+</body>
+
+</html>
