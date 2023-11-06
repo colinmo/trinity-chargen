@@ -7,11 +7,16 @@
     <title>Trinity Character Engine</title>
     <link href="https://fonts.cdnfonts.com/css/futura-windows" rel="stylesheet">
     <style>
+        :root {
+            --shade-color: rgba(0,0,0,0.3);
+        }
         html {
             font-family: 'Futura Windows', sans-serif;
-
         }
 
+        .abberant {
+            --shade-color: rgba(0,100,100,0.3);
+        }
         #generation.tabbed-interface>fieldset {
             display: none;
         }
@@ -618,7 +623,9 @@
             <style>
                 #attribute-layout {
                     display: grid;
-                    grid-template-areas: 'force intellect might presence'
+                    grid-template-areas: 
+                        'null mental physical social'
+                        'force intellect might presence'
                         'finesse cunning dexterity manipulation'
                         'resilience resolve stamina composure';
                     grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -631,22 +638,29 @@
                     display: inline-grid;
                     grid-template-columns: 1em auto;
                 }
+                .check:nth-of-type(2n+4), .mental-column:nth-of-type(2n+5), .physical-column:nth-of-type(2n+4), .social-column:is(:nth-of-type(2n+5)) {
+                    background: var(--shade-color);
+                    color: red;
+                }
             </style>
             <fieldset id="attribute-selection">
                 <legend>Attributes</legend>
                 <div id="attribute-layout">
+                <label class="stat mental-column" style="grid-area:mental"><select><option selected="selected">Primary</option><option>Secondary</option><option>Tertiary</option></select></label>
+                <label class="stat physical-column" style="grid-area:physical"><select><option>Primary</option><option selected="selected">Secondary</option><option>Tertiary</option></select></label>
+                <label class="stat social-column" style="grid-area:social"><select><option>Primary</option><option>Secondary</option><option selected="selected">Tertiary</option></select></label>
                 <label class="check" style="grid-area: force"><input type="checkbox" name="favoured_approach" value="force"/><span>Force</span></label>
                 <label class="check" style="grid-area: finesse"><input type="checkbox" name="favoured_approach" value="finesse"/><span>Finesse</span></label>
                 <label class="check" style="grid-area: resilience"><input type="checkbox" name="favoured_approach" value="resilience"/><span>Resilience</span></label>
-                <label class="stat" style="grid-area: intellect"><span>Intellect</span> <dot-selector min="1" max="5" default="1" value="1" name="intellect"></dot-selector></label>
-                <label class="stat" style="grid-area: cunning"><span>Cunning</span> <dot-selector min="1" max="5" default="1" value="1" name="cunning"></dot-selector></label>
-                <label class="stat" style="grid-area: resolve"><span>Resolve</span> <dot-selector min="1" max="5" default="1" value="1" name="resolve"></dot-selector></label>
-                <label class="stat" style="grid-area: might"><span>Might</span> <dot-selector min="1" max="5" default="1" value="1" name="might"></dot-selector></label>
-                <label class="stat" style="grid-area: dexterity"><span>Dexterity</span> <dot-selector min="1" max="5" default="1" value="1" name="dexterity"></dot-selector></label>
-                <label class="stat" style="grid-area: stamina"><span>Stamina</span> <dot-selector min="1" max="5" default="1" value="1" name="stamina"></dot-selector></label>
-                <label class="stat" style="grid-area: presence"><span>Presence</span> <dot-selector min="1" max="5" default="1" value="1" name="presence"></dot-selector></label>
-                <label class="stat" style="grid-area: manipulation"><span>Manipulation</span> <dot-selector min="1" max="5" default="1" value="1" name="manipulation"></dot-selector></label>
-                <label class="stat" style="grid-area: composure"><span>Composure</span> <dot-selector min="1" max="5" default="1" value="1" name="composure"></dot-selector></label>
+                <label class="stat mental-column" style="grid-area: intellect"><span>Intellect</span> <dot-selector min="1" max="5" default="1" value="1" name="intellect"></dot-selector></label>
+                <label class="stat mental-column" style="grid-area: cunning"><span>Cunning</span> <dot-selector min="1" max="5" default="1" value="1" name="cunning"></dot-selector></label>
+                <label class="stat mental-column" style="grid-area: resolve"><span>Resolve</span> <dot-selector min="1" max="5" default="1" value="1" name="resolve"></dot-selector></label>
+                <label class="stat physical-column" style="grid-area: might"><span>Might</span> <dot-selector min="1" max="5" default="1" value="1" name="might"></dot-selector></label>
+                <label class="stat physical-column" style="grid-area: dexterity"><span>Dexterity</span> <dot-selector min="1" max="5" default="1" value="1" name="dexterity"></dot-selector></label>
+                <label class="stat physical-column" style="grid-area: stamina"><span>Stamina</span> <dot-selector min="1" max="5" default="1" value="1" name="stamina"></dot-selector></label>
+                <label class="stat social-column" style="grid-area: presence"><span>Presence</span> <dot-selector min="1" max="5" default="1" value="1" name="presence"></dot-selector></label>
+                <label class="stat social-column" style="grid-area: manipulation"><span>Manipulation</span> <dot-selector min="1" max="5" default="1" value="1" name="manipulation"></dot-selector></label>
+                <label class="stat social-column" style="grid-area: composure"><span>Composure</span> <dot-selector min="1" max="5" default="1" value="1" name="composure"></dot-selector></label>
             </div>
             </fieldset>
             <fieldset id="template-selection">
