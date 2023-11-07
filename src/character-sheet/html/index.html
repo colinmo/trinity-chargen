@@ -744,6 +744,8 @@
                     input#talent:checked~form #character-sheet>div {
                         display: grid;
                         column-gap:10px;
+                        max-width: 950px;
+                        margin: 0 auto;
                         grid-template-areas:
                             'title title'
                             'top1 top2'
@@ -762,12 +764,28 @@
                             'gifts aspirhead'
                             'gifts aspirations'
                     }
+                    #character-sheet .title {
+                        grid-area: title;
+                        display:grid;
+                        justify-content: center;
+                    }
+                    #character-sheet .top1 > div > span+span {
+                        text-decoration-line: underline;
+                    }
                     #character-sheet .header {
                         display: grid;
                         background: var(--shade-color);
                         color: var(--shade-text);
                         font-weight: bold;
                         text-align: center;
+                    }
+                    #character-sheet .top1 {
+                        display:grid;
+                        grid-area: top1;
+                    }
+                    #character-sheet .top2 {
+                        display:grid;
+                        grid-area: top2;
                     }
                     #character-sheet .skillsheader {
                         grid-area: skillsheader;
@@ -798,7 +816,9 @@
                     }
                 </style>
                 <div>
-                    <div class="title">Header</div>
+                    <div class="title"><img src="img/talent.png"></div>
+                    <div class="top1"><div><span>Name:</span> <span>...</span></div></div>
+                    <div class="top2"><div><span>Origin Path:</span> <span>...</span></div></div>
                     <div class="skillsheader header">SKILLS</div>
                     <div class="skillsc1">xx</div>
                     <div class="skillsc2">yy</div>
