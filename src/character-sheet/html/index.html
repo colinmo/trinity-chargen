@@ -754,10 +754,10 @@
                             'skillsc1 skillsc2'
                             'attrheader attrheader'
                             'attributes attributes'
-                            'healthhead facethead'
-                            'health facets'
-                            'inspirhead injurhead'
-                            'edgehead skilltrhead'
+                            'facethead injurhead'
+                            'facets injuries'
+                            'inspirhead injuries'
+                            'inspirations injuries'
                             'edge skilltricks'
                             'gifthead pathehad'
                             'gifts pathconts'
@@ -795,8 +795,8 @@
                         grid-area: attrheader;
                         font-size: 40px;
                     }
-                    #character-sheet .healthhead {
-                        grid-area: healthhead;
+                    #character-sheet .inspirhead {
+                        grid-area: inspirhead;
                         font-size: 30px;
                     }
                     #character-sheet .facethead {
@@ -814,6 +814,22 @@
                         display:grid;
                         grid-area: skillsc2;
                     }
+                    #character-sheet .injurhead {
+                        grid-area: injurhead;
+                        font-size: 30px;
+                    }
+                    #character-sheet .injuries {
+                        display: grid;
+                        grid-area: injuries;
+                    }
+                    #character-sheet .facets {
+                        display: grid;
+                        grid-area: facets;
+                    }
+                    #character-sheet .inspirations {
+                        display: grid;
+                        grid-area: inspirations;
+                    }
                 </style>
                 <div>
                     <div class="title"><img src="img/talent.png"></div>
@@ -824,10 +840,12 @@
                     <div class="skillsc2">yy</div>
                     <div class="attrheader header">ATTRIBUTES</div>
                     <div class="attributes">Mep</div>
-                    <div class="healthhead header">HEALTH</div>
-                    <div class="health">...</div>
+                    <div class="injurhead header">INJURY CONDITIONS</div>
+                    <div class="injuries">...</div>
                     <div class="facethead header">FACETS</div>
                     <div class="facets">...</div>
+                    <div class="inspirhead header">INSPIRATIONS</div>
+                    <div class="inspirations">...</div>
                 </div>
             </fieldset>
         </form>
