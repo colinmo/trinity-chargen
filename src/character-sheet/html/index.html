@@ -8,15 +8,28 @@
     <link href="https://fonts.cdnfonts.com/css/futura-windows" rel="stylesheet">
     <style>
         :root {
-            --shade-color: rgba(0,0,0,0.3);
+            --shade-color: rgba(0, 0, 0, 0.3);
+            --shade-text: white;
+            --table-alt-color: #fff;
+            --border-color: #f0f000;
+            --background: white;
         }
+
         html {
             font-family: 'Futura Windows', sans-serif;
         }
 
-        .abberant {
-            --shade-color: rgba(0,100,100,0.3);
+        input#talent:checked~form {
+            --shade-color: #005c81;
+            --shade-text: white;
+            --table-alt-color: #cfe6ef;
+            --border-color: #8cc4d9;
+            --background: lightgrey;
         }
+
+        input#inspired:checked~form {
+            --shade-color: linear-gradient(90deg, rgba(245,89,0,1) 0%, rgba(235,0,35,1) 15%, rgba(235,0,35,1) 85%, rgba(245,89,0,1) 100%);         }
+
         #generation.tabbed-interface>fieldset {
             display: none;
         }
@@ -43,12 +56,10 @@
             background: green;
         }
 
-        #class-of-char label input {
-            max-width: 0%;
-            visibility: hidden;
-        }
-
-        #class-of-char input:checked+span {
+        input#talent:checked~form label[for=talent],
+        input#psion:checked~form label[for=psion],
+        input#nova:checked~form label[for=nova],
+        input#inspired:checked~form label[for=inspired] {
             cursor: pointer;
             font-weight: bold;
             text-decoration: underline solid 3px;
@@ -402,6 +413,10 @@
         <input type="radio" style="visibility:hidden;" name="tabopen" id="template">
         <input type="radio" style="visibility:hidden;" name="tabopen" id="extras">
         <input type="radio" style="visibility:hidden;" name="tabopen" id="sheet">
+        <input type="radio" style="visibility:hidden;" name="charclass" id="talent" value="Talent" />
+        <input type="radio" style="visibility:hidden;" name="charclass" id="psion" value="Psion" />
+        <input type="radio" style="visibility:hidden;" name="charclass" id="nova" value="Nova" />
+        <input type="radio" style="visibility:hidden;" name="charclass" id="inspired" value="Inspired" />
         <form id="generation" class="tabbed-interface">
             <nav>
                 <label for="class">Class</label>
@@ -415,10 +430,10 @@
             </nav>
             <fieldset id="class-of-char">
                 <legend>Character type</legend>
-                <label><input type="radio" id="baseline" name="charclass" /><span>Talent</span></label>
-                <label><input type="radio" id="psion" name="charclass" /><span>Psion</span></label>
-                <label><input type="radio" id="nova" name="charclass" /><span>Nova</span></label>
-                <label><input type="radio" id="talent" name="charclass" /><span>Inspired</span></label>
+                <label for="talent"><span>Talent</span></label>
+                <label for="psion"><span>Psion</span></label>
+                <label for="nova"><span>Nova</span></label>
+                <label for="inspired"><span>Inspired</span></label>
             </fieldset>
             <fieldset id="basics-for-char">
                 <legend>Basics</legend>
@@ -623,22 +638,28 @@
             <style>
                 #attribute-layout {
                     display: grid;
-                    grid-template-areas: 
+                    grid-template-areas:
                         'null mental physical social'
                         'force intellect might presence'
                         'finesse cunning dexterity manipulation'
                         'resilience resolve stamina composure';
                     grid-template-columns: 1fr 1fr 1fr 1fr;
                 }
+
                 #attribute-selection label.stat {
                     display: inline-grid;
                     grid-template-columns: 8em auto;
                 }
+
                 #attribute-selection label.check {
                     display: inline-grid;
                     grid-template-columns: 1em auto;
                 }
-                .check:nth-of-type(2n+4), .mental-column:nth-of-type(2n+5), .physical-column:nth-of-type(2n+4), .social-column:is(:nth-of-type(2n+5)) {
+
+                .check:nth-of-type(2n+4),
+                .mental-column:nth-of-type(2n+5),
+                .physical-column:nth-of-type(2n+4),
+                .social-column:is(:nth-of-type(2n+5)) {
                     background: var(--shade-color);
                     color: red;
                 }
@@ -646,22 +667,46 @@
             <fieldset id="attribute-selection">
                 <legend>Attributes</legend>
                 <div id="attribute-layout">
-                <label class="stat mental-column" style="grid-area:mental"><select><option selected="selected">Primary</option><option>Secondary</option><option>Tertiary</option></select></label>
-                <label class="stat physical-column" style="grid-area:physical"><select><option>Primary</option><option selected="selected">Secondary</option><option>Tertiary</option></select></label>
-                <label class="stat social-column" style="grid-area:social"><select><option>Primary</option><option>Secondary</option><option selected="selected">Tertiary</option></select></label>
-                <label class="check" style="grid-area: force"><input type="checkbox" name="favoured_approach" value="force"/><span>Force</span></label>
-                <label class="check" style="grid-area: finesse"><input type="checkbox" name="favoured_approach" value="finesse"/><span>Finesse</span></label>
-                <label class="check" style="grid-area: resilience"><input type="checkbox" name="favoured_approach" value="resilience"/><span>Resilience</span></label>
-                <label class="stat mental-column" style="grid-area: intellect"><span>Intellect</span> <dot-selector min="1" max="5" default="1" value="1" name="intellect"></dot-selector></label>
-                <label class="stat mental-column" style="grid-area: cunning"><span>Cunning</span> <dot-selector min="1" max="5" default="1" value="1" name="cunning"></dot-selector></label>
-                <label class="stat mental-column" style="grid-area: resolve"><span>Resolve</span> <dot-selector min="1" max="5" default="1" value="1" name="resolve"></dot-selector></label>
-                <label class="stat physical-column" style="grid-area: might"><span>Might</span> <dot-selector min="1" max="5" default="1" value="1" name="might"></dot-selector></label>
-                <label class="stat physical-column" style="grid-area: dexterity"><span>Dexterity</span> <dot-selector min="1" max="5" default="1" value="1" name="dexterity"></dot-selector></label>
-                <label class="stat physical-column" style="grid-area: stamina"><span>Stamina</span> <dot-selector min="1" max="5" default="1" value="1" name="stamina"></dot-selector></label>
-                <label class="stat social-column" style="grid-area: presence"><span>Presence</span> <dot-selector min="1" max="5" default="1" value="1" name="presence"></dot-selector></label>
-                <label class="stat social-column" style="grid-area: manipulation"><span>Manipulation</span> <dot-selector min="1" max="5" default="1" value="1" name="manipulation"></dot-selector></label>
-                <label class="stat social-column" style="grid-area: composure"><span>Composure</span> <dot-selector min="1" max="5" default="1" value="1" name="composure"></dot-selector></label>
-            </div>
+                    <label class="stat mental-column" style="grid-area:mental"><select>
+                            <option selected="selected">Primary</option>
+                            <option>Secondary</option>
+                            <option>Tertiary</option>
+                        </select></label>
+                    <label class="stat physical-column" style="grid-area:physical"><select>
+                            <option>Primary</option>
+                            <option selected="selected">Secondary</option>
+                            <option>Tertiary</option>
+                        </select></label>
+                    <label class="stat social-column" style="grid-area:social"><select>
+                            <option>Primary</option>
+                            <option>Secondary</option>
+                            <option selected="selected">Tertiary</option>
+                        </select></label>
+                    <label class="check" style="grid-area: force"><input type="checkbox" name="favoured_approach"
+                            value="force" /><span>Force</span></label>
+                    <label class="check" style="grid-area: finesse"><input type="checkbox" name="favoured_approach"
+                            value="finesse" /><span>Finesse</span></label>
+                    <label class="check" style="grid-area: resilience"><input type="checkbox" name="favoured_approach"
+                            value="resilience" /><span>Resilience</span></label>
+                    <label class="stat mental-column" style="grid-area: intellect"><span>Intellect</span> <dot-selector
+                            min="1" max="5" default="1" value="1" name="intellect"></dot-selector></label>
+                    <label class="stat mental-column" style="grid-area: cunning"><span>Cunning</span> <dot-selector
+                            min="1" max="5" default="1" value="1" name="cunning"></dot-selector></label>
+                    <label class="stat mental-column" style="grid-area: resolve"><span>Resolve</span> <dot-selector
+                            min="1" max="5" default="1" value="1" name="resolve"></dot-selector></label>
+                    <label class="stat physical-column" style="grid-area: might"><span>Might</span> <dot-selector
+                            min="1" max="5" default="1" value="1" name="might"></dot-selector></label>
+                    <label class="stat physical-column" style="grid-area: dexterity"><span>Dexterity</span>
+                        <dot-selector min="1" max="5" default="1" value="1" name="dexterity"></dot-selector></label>
+                    <label class="stat physical-column" style="grid-area: stamina"><span>Stamina</span> <dot-selector
+                            min="1" max="5" default="1" value="1" name="stamina"></dot-selector></label>
+                    <label class="stat social-column" style="grid-area: presence"><span>Presence</span> <dot-selector
+                            min="1" max="5" default="1" value="1" name="presence"></dot-selector></label>
+                    <label class="stat social-column" style="grid-area: manipulation"><span>Manipulation</span>
+                        <dot-selector min="1" max="5" default="1" value="1" name="manipulation"></dot-selector></label>
+                    <label class="stat social-column" style="grid-area: composure"><span>Composure</span> <dot-selector
+                            min="1" max="5" default="1" value="1" name="composure"></dot-selector></label>
+                </div>
             </fieldset>
             <fieldset id="template-selection">
                 <legend>Template</legend>
@@ -674,9 +719,12 @@
                     <textarea name="moment" id="moment"></textarea>
                     <fieldset>
                         <legend>Type of Inspired</legend>
-                        <label>Daredevil <input type="radio" name="inspired_type" id="daredevil" value="daredevil" /></label>
-                        <label>Mesmirist <input type="radio" name="inspired_type" id="mesmirist" value="mesmirist" /></label>
-                        <label>Stalwart <input type="radio" name="inspired_type" id="stalwart" value="stalwart" /></label>
+                        <label>Daredevil <input type="radio" name="inspired_type" id="daredevil"
+                                value="daredevil" /></label>
+                        <label>Mesmirist <input type="radio" name="inspired_type" id="mesmirist"
+                                value="mesmirist" /></label>
+                        <label>Stalwart <input type="radio" name="inspired_type" id="stalwart"
+                                value="stalwart" /></label>
                     </fieldset>
                     <fieldset>
                         <legend>Facets</legend>
@@ -692,6 +740,75 @@
             <fieldset id="character-sheet">
                 <legend>Character sheet</legend>
                 <p>[Show in New Window] [Show in Beside Column] [Show in this Tab]</p>
+                <style>
+                    input#talent:checked~form #character-sheet>div {
+                        display: grid;
+                        column-gap:10px;
+                        grid-template-areas:
+                            'title title'
+                            'top1 top2'
+                            'inspiration inspiration'
+                            'skillsheader skillsheader'
+                            'skillsc1 skillsc2'
+                            'attrheader attrheader'
+                            'attributes attributes'
+                            'healthhead facethead'
+                            'health facets'
+                            'inspirhead injurhead'
+                            'edgehead skilltrhead'
+                            'edge skilltricks'
+                            'gifthead pathehad'
+                            'gifts pathconts'
+                            'gifts aspirhead'
+                            'gifts aspirations'
+                    }
+                    #character-sheet .header {
+                        display: grid;
+                        background: var(--shade-color);
+                        color: var(--shade-text);
+                        font-weight: bold;
+                        text-align: center;
+                    }
+                    #character-sheet .skillsheader {
+                        grid-area: skillsheader;
+                        font-size: 40px;
+                    }
+                    #character-sheet .attrheader {
+                        grid-area: attrheader;
+                        font-size: 40px;
+                    }
+                    #character-sheet .healthhead {
+                        grid-area: healthhead;
+                        font-size: 30px;
+                    }
+                    #character-sheet .facethead {
+                        grid-area: facethead;
+                        font-size: 30px;
+                    }
+                    #character-sheet .attributes {
+                        grid-area: attributes;
+                    }
+                    #character-sheet .skillsc1 {
+                        display:grid;
+                        grid-area: skillsc1;
+                    }
+                    #character-sheet .skillsc2 {
+                        display:grid;
+                        grid-area: skillsc2;
+                    }
+                </style>
+                <div>
+                    <div class="title">Header</div>
+                    <div class="skillsheader header">SKILLS</div>
+                    <div class="skillsc1">xx</div>
+                    <div class="skillsc2">yy</div>
+                    <div class="attrheader header">ATTRIBUTES</div>
+                    <div class="attributes">Mep</div>
+                    <div class="healthhead header">HEALTH</div>
+                    <div class="health">...</div>
+                    <div class="facethead header">FACETS</div>
+                    <div class="facets">...</div>
+                </div>
             </fieldset>
         </form>
         <style>
@@ -802,10 +919,10 @@
                 this.attribute_ranking = []
                 this.favoured = ""
                 this.updateSkills()
+                this.updateCharacter();
             }
 
             updateSkills() {
-                // Paths selection
                 let skillsBar = Object.keys(this.skills).join("|")
                 document.querySelectorAll("repeat-selector[name*='_skill_']").forEach((x) => {
                     x.setAttribute("options", skillsBar);
@@ -822,6 +939,16 @@
                     <dot-selector name="skill_value[${x}]" max="5"></dot-selector>
                 </div>`;
                 });
+            }
+            updateCharacter() {
+
+                this.basics = {
+                    "splat": document.querySelector("input[name='charclass']:checked")?.value ?? '',
+                    "name": document.getElementById("name").value,
+                    "concept": document.getElementById("concept").value,
+                    "short_aspirations": [document.getElementById("aspiration_short_1").value, document.getElementById("aspiration_short_2").value],
+                    "long_aspiration": document.getElementById("aspiration_long").value,
+                }
             }
         }
         class NovaCharacter extends BaselineCharacter {
@@ -847,8 +974,6 @@
         var character = new BaselineCharacter();
         // Idea - don't have inherited classes, have extentions
         // just for the template/ final touches for each
-
-
     </script>
 </body>
 
