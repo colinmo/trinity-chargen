@@ -27,8 +27,26 @@
             --background: lightgrey;
         }
 
+        input#nova:checked~form {
+            --shade-color: black;
+            --shade-text: #ffbd00;
+            --table-alt-color: #ffe6db;
+            --border-color: #ffdccd;
+        }
+
+        input#psion:checked~form {
+            --shade-color: #b90016;
+            --shade-text: white;
+            --table-alt-color: #b90016;
+            --border-color: #e5a08d;
+
+        }
         input#inspired:checked~form {
-            --shade-color: linear-gradient(90deg, rgba(245,89,0,1) 0%, rgba(235,0,35,1) 15%, rgba(235,0,35,1) 85%, rgba(245,89,0,1) 100%);         }
+            --shade-color: linear-gradient(90deg, rgba(245,89,0,1) 0%, rgba(235,0,35,1) 15%, rgba(235,0,35,1) 85%, rgba(245,89,0,1) 100%);         
+            --shade-text: white;
+            --border-color: #e5a08d;
+            --table-alt-color: #f5ddd5
+        }
 
         #generation.tabbed-interface>fieldset {
             display: none;
