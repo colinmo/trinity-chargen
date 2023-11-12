@@ -42,6 +42,7 @@
         fieldset {
             padding: 20px;
         }
+
         #class-of-char label {
             font-size: 3em;
             border: thin solid brown;
@@ -462,28 +463,57 @@
 </head>
 
 <body>
+    <style>
+        .button-bar {
+            display: flex;
+        }
+
+        .button-bar a {
+            display: inline-block;
+            text-align: center;
+            position: relative;
+            width: 2.5em;
+            border: none;
+            text-decoration: none;
+            margin: 0;
+            padding: 3px;
+            border: 5px groove black;
+            background: grey;
+        }
+
+        a[aria-label="Save"]::after {
+            content: "\ffea";
+            position: absolute;
+            top: 6px;
+            left: 0.7em;
+            font-weight: bold;
+        }
+
+        details summary::-webkit-details-marker,
+        details summary::marker {
+            display: none;
+        }
+        details > summary {
+            list-style: none;
+            display:inline-block;
+            float: right;
+        }
+    </style>
     <main id="trinity" class="panel">
+        
         <header>
             <h1 class="p-name">Trinity character creator</h1>
-            <nav class="buttons">
-                <a href="#">Create</a>
-                <a href="#">Load</a>
-            </nav>
-        </header>
+            <!--<nav class="button-bar disabled">
+                <a href="#" aria-label="New character">&#x1F195;</a>
+                <a href="#" aria-label="Load">&#x1F4C1;</a>
+                <a href="#" aria-label="Save">&#x1f4be;</a>
+            </nav>-->
+        </header><!--
         <section id="introduction">
             <h2>Introduction</h2>
-            <details>
-                <summary>Help</summary>
-
                 <p>INTRODUCTION TEXT</p>
-                <p>Ideas</p>
-                <ul>
-                    <li>Have character sheet in an extra window or able to be a beside tab to show the character as its
-                        created.</li>
-                    <li>Save user preferences (e.g. have character sheet as a tab, or beside, or other window).</li>
-                </ul>
-            </details>
         </section>
+    -->
         <input type="radio" style="visibility:hidden;" name="tabopen" id="class">
         <input type="radio" style="visibility:hidden;" name="tabopen" id="basics">
         <input type="radio" style="visibility:hidden;" name="tabopen" id="paths">
@@ -509,6 +539,16 @@
             </nav>
             <fieldset id="class-of-char">
                 <legend>Character type</legend>
+                <details>
+                    <summary>&#x1F6C8;</summary>
+                    <p>Ideas</p>
+                    <ul>
+                        <li>Have character sheet in an extra window or able to be a beside tab to show the character as
+                            its
+                            created.</li>
+                        <li>Save user preferences (e.g. have character sheet as a tab, or beside, or other window).</li>
+                    </ul>
+                </details>
                 <label for="talent"><span>Talent</span></label>
                 <label for="psion"><span>Psion</span></label>
                 <label for="nova"><span>Nova</span></label>
