@@ -11,41 +11,102 @@
             --shade-color: rgba(0, 0, 0, 0.3);
             --shade-text: white;
             --table-alt-color: #fff;
+            --table-alt-text: #000;
             --border-color: #f0f000;
             --background: white;
+
+            --talent-background: #cfe6ef;
+            --talent-text: black;
+
+            --nova-background: black;
+            --nova-text: #ffbd00;
+
+            --psion-background: #b90016;
+            --psion-text: white;
+
+            --inspired-background: #e5a08d;
+            --inspired-text: black;
+        }
+
+        @media screen and (min-width:70em) {
+            main {
+                margin: 0 auto;
+                max-width: 70em;
+            }
         }
 
         html {
             font-family: 'Futura Windows', sans-serif;
         }
 
+        fieldset {
+            padding: 20px;
+        }
+        #class-of-char label {
+            font-size: 3em;
+            border: thin solid brown;
+            border-radius: 20px;
+            padding: 10px;
+            margin: 10px 10px;
+            display: inline-block;
+            width: 8em;
+            text-align: center;
+        }
+
         input#talent:checked~form {
             --shade-color: #005c81;
             --shade-text: white;
-            --table-alt-color: #cfe6ef;
-            --border-color: #8cc4d9;
+            --table-alt-color: var(--talent-background);
+            --table-alt-text: var(--talent-text) --border-color: #8cc4d9;
             --background: lightgrey;
         }
 
+        #class-of-char label[for=talent] {
+            background: var(--talent-background);
+            color: var(--talent-text);
+            border-color: var(--talent-text);
+        }
+
         input#nova:checked~form {
-            --shade-color: black;
-            --shade-text: #ffbd00;
-            --table-alt-color: #ffe6db;
+            --shade-color: var(--nova-background);
+            --shade-text: var(--nova-text);
+            --table-alt-color: #e5a08d;
+            --table-alt-text: black;
             --border-color: #ffdccd;
         }
+
+        #class-of-char label[for=nova] {
+            background: var(--nova-background);
+            color: var(--nova-text);
+            border-color: var(--nova-text);
+        }
+
 
         input#psion:checked~form {
             --shade-color: #b90016;
             --shade-text: white;
-            --table-alt-color: #b90016;
+            --table-alt-color: var(--psion-background);
+            --table-alt-text: var(--psion-text);
             --border-color: #e5a08d;
-
         }
+
+        #class-of-char label[for=psion] {
+            background: var(--psion-background);
+            color: var(--psion-text);
+            border-color: var(--psion-text);
+        }
+
         input#inspired:checked~form {
-            --shade-color: linear-gradient(90deg, rgba(245,89,0,1) 0%, rgba(235,0,35,1) 15%, rgba(235,0,35,1) 85%, rgba(245,89,0,1) 100%);         
+            --shade-color: linear-gradient(90deg, rgba(245, 89, 0, 1) 0%, rgba(235, 0, 35, 1) 15%, rgba(235, 0, 35, 1) 85%, rgba(245, 89, 0, 1) 100%);
             --shade-text: white;
-            --border-color: #e5a08d;
-            --table-alt-color: #f5ddd5
+            --border-color: var(--inspired-background);
+            --table-alt-color: #f5ddd5;
+        }
+
+        #class-of-char label[for=inspired] {
+            background: var(--inspired-background);
+            color: var(--inspired-text);
+            border-color: var(--inspired-text);
         }
 
         #generation.tabbed-interface>fieldset {
@@ -678,8 +739,8 @@
                 .mental-column:nth-of-type(2n+5),
                 .physical-column:nth-of-type(2n+4),
                 .social-column:is(:nth-of-type(2n+5)) {
-                    background: var(--shade-color);
-                    color: red;
+                    background: var(--table-alt-color);
+                    color: var(--table-alt-text);
                 }
             </style>
             <fieldset id="attribute-selection">
@@ -761,7 +822,7 @@
                 <style>
                     input#talent:checked~form #character-sheet>div {
                         display: grid;
-                        column-gap:10px;
+                        column-gap: 10px;
                         max-width: 950px;
                         margin: 0 auto;
                         grid-template-areas:
@@ -782,14 +843,17 @@
                             'gifts aspirhead'
                             'gifts aspirations'
                     }
+
                     #character-sheet .title {
                         grid-area: title;
-                        display:grid;
+                        display: grid;
                         justify-content: center;
                     }
-                    #character-sheet .top1 > div > span+span {
+
+                    #character-sheet .top1>div>span+span {
                         text-decoration-line: underline;
                     }
+
                     #character-sheet .header {
                         display: grid;
                         background: var(--shade-color);
@@ -797,53 +861,66 @@
                         font-weight: bold;
                         text-align: center;
                     }
+
                     #character-sheet .top1 {
-                        display:grid;
+                        display: grid;
                         grid-area: top1;
                     }
+
                     #character-sheet .top2 {
-                        display:grid;
+                        display: grid;
                         grid-area: top2;
                     }
+
                     #character-sheet .skillsheader {
                         grid-area: skillsheader;
                         font-size: 40px;
                     }
+
                     #character-sheet .attrheader {
                         grid-area: attrheader;
                         font-size: 40px;
                     }
+
                     #character-sheet .inspirhead {
                         grid-area: inspirhead;
                         font-size: 30px;
                     }
+
                     #character-sheet .facethead {
                         grid-area: facethead;
                         font-size: 30px;
                     }
+
                     #character-sheet .attributes {
                         grid-area: attributes;
                     }
+
                     #character-sheet .skillsc1 {
-                        display:grid;
+                        display: grid;
                         grid-area: skillsc1;
                     }
+
                     #character-sheet .skillsc2 {
-                        display:grid;
+                        display: grid;
                         grid-area: skillsc2;
                     }
+
                     #character-sheet .injurhead {
                         grid-area: injurhead;
                         font-size: 30px;
                     }
+
                     #character-sheet .injuries {
                         display: grid;
                         grid-area: injuries;
                     }
+
                     #character-sheet .facets {
                         display: grid;
                         grid-area: facets;
                     }
+
                     #character-sheet .inspirations {
                         display: grid;
                         grid-area: inspirations;
@@ -851,8 +928,12 @@
                 </style>
                 <div>
                     <div class="title"><img src="img/talent.png"></div>
-                    <div class="top1"><div><span>Name:</span> <span>...</span></div></div>
-                    <div class="top2"><div><span>Origin Path:</span> <span>...</span></div></div>
+                    <div class="top1">
+                        <div><span>Name:</span> <span>...</span></div>
+                    </div>
+                    <div class="top2">
+                        <div><span>Origin Path:</span> <span>...</span></div>
+                    </div>
                     <div class="skillsheader header">SKILLS</div>
                     <div class="skillsc1">xx</div>
                     <div class="skillsc2">yy</div>
