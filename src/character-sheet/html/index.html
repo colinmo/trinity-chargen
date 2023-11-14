@@ -15,7 +15,7 @@
             --border-color: #f0f000;
             --background: white;
 
-            --talent-background: #cfe6ef;
+            --talent-background: #d8a28f;
             --talent-text: black;
 
             --nova-background: black;
@@ -57,11 +57,11 @@
         }
 
         input#talent:checked~form {
-            --shade-color: #005c81;
+            --shade-color: #a5181c;
             --shade-text: white;
-            --table-alt-color: var(--talent-background);
+            --table-alt-color: #f0ded6;
             --table-alt-text: var(--talent-text);
-            --border-color: #8cc4d9;
+            --border-color: #d8a28f;
             --background: lightgrey;
             --title-img: url(img/talent.png);
             --title-img-height: 168px;
@@ -286,6 +286,44 @@
             }
         }
         customElements.define('dot-selector', DotSelector);
+
+        class DotLabel extends HTMLElement {
+            constructor() {
+                super();
+
+                // Known attributes
+                this.name = "";
+                this.value = 0;
+                this.max = 5;
+            }
+
+            static get observedAttributes() {
+                // These attributes will be monitored for
+                // changes in the DOM
+                return ['value', "name", "max"]
+            }
+
+            attributeChangedCallback(property, oldValue, newValue) {
+                // Called when a property changes
+                // This just sets the local property to the new one
+                if (oldValue === newValue) return;
+                this[property] = newValue;
+                this.connectedCallback()
+            }
+
+            connectedCallback() {
+                // Initial values
+                this.style.display = "grid";
+                this.style.gridTemplateColumns = "auto auto";
+
+                const maxPlus1 = this.value == 10 ? 10 : 5;
+                this.querySelector('.label').innerText = this.name;
+                this.querySelector('.label').style = "display: grid";
+                this.querySelector('.value').innerHTML = "&#x26AB;".repeat(this.value) + "&#x26AA;".repeat(maxPlus1 - this.value);
+                this.querySelector('.value').style = "display:grid;justify-content: end;";
+            }
+        }
+        customElements.define('dot-label', DotLabel);
 
         class RepeatSelector extends HTMLElement {
             constructor() {
@@ -564,13 +602,17 @@
                 <label for="nova"><span>Nova</span></label>
                 <label for="inspired"><span>Inspired</span></label>
                 <hr />
-                <a href="javascript:character.updateCharacter();" />Update Character</a>
+                <a href="javascript:character.updateCharacter();character.updateCharacterSheet()" />Update Character</a>
             </fieldset>
             <fieldset id="basics-for-char">
                 <legend>Basics</legend>
                 <div class="just-skill">
                     <label for="name" id="label_name">Name</label>
                     <input type="text" id="name" name="name" value="">
+                </div>
+                <div class="just-skill">
+                    <label for="player" id="label_player">Player</label>
+                    <input type="text" id="player" name="player" value="">
                 </div>
                 <div class="just-skill">
                     <label for="concept" id="label_concept">Concept/ RP Tips</label>
@@ -877,6 +919,7 @@
                         column-gap: 10px;
                         max-width: 950px;
                         margin: 0 auto;
+                        grid-template-columns: 1fr 1fr;
                         grid-template-areas:
                             'title title'
                             'top1 top2'
@@ -948,6 +991,10 @@
                         grid-area: attributes;
                     }
 
+                    #character-sheet .skillsc1 dot-label:nth-child(odd), #character-sheet .skillsc2 dot-label:nth-child(odd) {
+                        background: var(--table-alt-color);
+                        color: var(--table-alt-text);
+                    }
                     #character-sheet .skillsc1 {
                         display: grid;
                         grid-area: skillsc1;
@@ -980,8 +1027,10 @@
                 </style>
                 <div>
                     <div class="title" style="background: var(--title-img) no-repeat no-repeat center center;height: var(--title-img-height)"></div>
-                    <div class="top1" data-field="name">
-                        <div><span>Name:</span> <span class="value">...</span></div>
+                    <div class="top1">
+                        <div data-field="name"><span>Name:</span> <span class="value">...</span></div>
+                        <div data-field="player"><span>Player:</span> <span class="value">...</span></div>
+                        <div data-field="concept"><span>Concept:</span> <span class="value">...</span></div>
                     </div>
                     <div class="top2">
                         <div><span>Origin Path:</span> <span>...</span></div>
@@ -997,6 +1046,11 @@
                     <div class="facets">...</div>
                     <div class="inspirhead header">INSPIRATIONS</div>
                     <div class="inspirations">...</div>
+                </div>
+                <div>
+                    <div class="aspirheader">ASPIRATIONS</div>
+                    <div data-field="short_aspiration_1"><span>Short aspiration 1</span> <span class="value">...</span></div>
+                    <div data-field="short_aspiration_2"><span>Short aspiration 2</span> <span class="value">...</span></div>
                 </div>
             </fieldset>
         </form>
@@ -1062,8 +1116,10 @@
                 this.basics = {
                     "splat": "",
                     "name": "",
+                    "player": "",
                     "concept": "",
-                    "short_aspirations": ["", ""],
+                    "short_aspiration_1": "",
+                    "short_aspiration_2": "",
                     "long_aspiration": "",
                 }
                 this.paths = [
@@ -1075,6 +1131,7 @@
                     "Aim": 0,
                     "Athletics": 0,
                     "Close Combat": 0,
+                    "Command": 0,
                     "Culture": 0,
                     "Empathy": 0,
                     "Enigmas": 0,
@@ -1119,6 +1176,7 @@
 
                 let skillBox = document.querySelector("#skill-selection div")
                 skillBox.innerHTML = "";
+
                 // Skill selection
                 Object.keys(this.skills).forEach((x) => {
                     skillBox.innerHTML += `
@@ -1131,16 +1189,45 @@
                 //Skills on character sheet
             }
             updateCharacter() {
+                // Basics
                 this.basics = {
                     "splat": document.querySelector("input[name='charclass']:checked")?.value ?? '',
                     "name": document.getElementById("name").value,
+                    "player": document.getElementById("player").value,
                     "concept": document.getElementById("concept").value,
-                    "short_aspirations": [document.getElementById("aspiration_short_1").value, document.getElementById("aspiration_short_2").value],
+                    "short_aspiration_1": document.getElementById("aspiration_short_1").value,
+                    "short_aspiration_2": document.getElementById("aspiration_short_2").value,
                     "long_aspiration": document.getElementById("aspiration_long").value,
                 }
+                // Skills (remember to add in all locations skills can change)
+                Object.keys(this.skills).forEach((x) => {
+                    this.skills[x] = document.querySelector(`dot-selector[name='skill_value[${x}]']`)?.value ?? 0;
+                })
             }
             updateCharacterSheet() {
-                document.querySelector("*[data-field='name'] .value").innerText = this.basics.name;
+                // Basics
+                Object.keys(this.basics).forEach((x) => {
+                    let bob = document.querySelector(`*[data-field='${x}'] .value`);
+                    if (bob) {
+                        bob.innerText = this.basics[x];
+                    }
+                })
+
+                // Skills
+                const skillsKeys = Object.keys(this.skills),
+                    halfWayIndex = Math.ceil(skillsKeys.length / 2),
+                    leftSkills = skillsKeys.slice(0,halfWayIndex),
+                    rightSkills = skillsKeys.slice(halfWayIndex),
+                    leftColumn = document.querySelector('.skillsc1'),
+                    rightColumn = document.querySelector('.skillsc2');
+                leftColumn.innerHTML = "";
+                leftSkills.forEach((x) => {
+                    leftColumn.innerHTML += `<dot-label name="${x}" value="${this.skills[x]}" max="5"><span class="label"></span><span class="value"></span></dot-label>`;
+                })
+                rightColumn.innerHTML = "";
+                rightSkills.forEach((x) => {
+                    rightColumn.innerHTML += `<dot-label name="${x}" value="${this.skills[x]}" max="5"><span class="label"></span><span class="value"></span></dot-label>`;
+                })
             }
         }
         class NovaCharacter extends BaselineCharacter {
