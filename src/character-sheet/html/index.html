@@ -156,6 +156,16 @@
             text-decoration: underline solid 3px;
         }
 
+        div.talent, div.psion, div.nova, div.inspired {
+            display: none;
+        }
+        input#talent:checked~form div.talent,
+        input#psion:checked~form div.psion,
+        input#nova:checked~form div.nova,
+        input#inspired:checked~form div.inspired {
+            display: block;
+        }
+
         #class-of-char input:not(:checked)+span {
             cursor: pointer;
             font-weight: lighter;
@@ -223,6 +233,8 @@
     </style>
 
     <script>
+        var filledCircle = `&#x25C9;`,
+	    emptyCircle = `&#x25EF;`;
         class DotSelector extends HTMLElement {
             constructor() {
                 super();
@@ -268,7 +280,7 @@
                     let thisOption = document.createElement("OPTION")
                     thisOption.value = i;
                     thisOption.selected = (i == this.current) ? " selected" : "";
-                    thisOption.innerHTML = "&#x26AB;".repeat(i) + "&#x26AA;".repeat(this.max - i);
+                    thisOption.innerHTML = filledCircle.repeat(i) + emptyCircle.repeat(this.max - i);
                     thisSelect.appendChild(thisOption)
                 }
 
@@ -317,9 +329,12 @@
                 this.style.gridTemplateColumns = "auto auto";
 
                 const maxPlus1 = this.value == 10 ? 10 : 5;
+                if (this.innerHTML == "") {
+                    this.innerHTML = `<span class="label"></span><span class="value"></span>`;
+                }
                 this.querySelector('.label').innerText = this.name;
                 this.querySelector('.label').style = "display: grid";
-                this.querySelector('.value').innerHTML = "&#x26AB;".repeat(this.value) + "&#x26AA;".repeat(maxPlus1 - this.value);
+                this.querySelector('.value').innerHTML = filledCircle.repeat(this.value) + emptyCircle.repeat(maxPlus1 - this.value);
                 this.querySelector('.value').style = "display:grid;justify-content: end;";
             }
         }
@@ -812,10 +827,11 @@
                 #attribute-layout {
                     display: grid;
                     grid-template-areas:
-                        'null mental physical social'
+                        '. mental physical social'
                         'force intellect might presence'
                         'finesse cunning dexterity manipulation'
-                        'resilience resolve stamina composure';
+                        'resilience resolve stamina composure'
+                        '. mental-end physical-end social-end';
                     grid-template-columns: 1fr 1fr 1fr 1fr;
                 }
 
@@ -838,19 +854,34 @@
                 }
             </style>
             <fieldset id="attribute-selection">
+                <style>
+                    label.stat.stattop  {
+                        border-top: thin solid var(--border-color);
+                        padding-top: 5px;
+                    }
+                    label.stat, div.statbottom {
+                        border-left: thin solid var(--border-color);
+                        border-right: thin solid var(--border-color);
+                        padding: 0 5px;
+                    }
+                    div.statbottom {
+                        border-bottom: thin solid var(--border-color);
+                        height:5px;
+                    }
+                </style>
                 <legend>Attributes</legend>
                 <div id="attribute-layout">
-                    <label class="stat mental-column" style="grid-area:mental"><select>
+                    <label class="stat stattop mental-column" style="grid-area:mental"><select>
                             <option selected="selected">Primary</option>
                             <option>Secondary</option>
                             <option>Tertiary</option>
                         </select></label>
-                    <label class="stat physical-column" style="grid-area:physical"><select>
+                    <label class="stat stattop physical-column" style="grid-area:physical"><select>
                             <option>Primary</option>
                             <option selected="selected">Secondary</option>
                             <option>Tertiary</option>
                         </select></label>
-                    <label class="stat social-column" style="grid-area:social"><select>
+                    <label class="stat stattop social-column" style="grid-area:social"><select>
                             <option>Primary</option>
                             <option>Secondary</option>
                             <option selected="selected">Tertiary</option>
@@ -867,29 +898,54 @@
                             min="1" max="5" default="1" value="1" name="cunning"></dot-selector></label>
                     <label class="stat mental-column" style="grid-area: resolve"><span>Resolve</span> <dot-selector
                             min="1" max="5" default="1" value="1" name="resolve"></dot-selector></label>
+                    <div class="mental-column statbottom" style="grid-area: mental-end">&nbsp;</div>
                     <label class="stat physical-column" style="grid-area: might"><span>Might</span> <dot-selector
                             min="1" max="5" default="1" value="1" name="might"></dot-selector></label>
                     <label class="stat physical-column" style="grid-area: dexterity"><span>Dexterity</span>
                         <dot-selector min="1" max="5" default="1" value="1" name="dexterity"></dot-selector></label>
                     <label class="stat physical-column" style="grid-area: stamina"><span>Stamina</span> <dot-selector
                             min="1" max="5" default="1" value="1" name="stamina"></dot-selector></label>
+                    <div class="physical-column statbottom" style="grid-area: physical-end">&nbsp;</div>
                     <label class="stat social-column" style="grid-area: presence"><span>Presence</span> <dot-selector
                             min="1" max="5" default="1" value="1" name="presence"></dot-selector></label>
                     <label class="stat social-column" style="grid-area: manipulation"><span>Manipulation</span>
                         <dot-selector min="1" max="5" default="1" value="1" name="manipulation"></dot-selector></label>
                     <label class="stat social-column" style="grid-area: composure"><span>Composure</span> <dot-selector
                             min="1" max="5" default="1" value="1" name="composure"></dot-selector></label>
+                    <div class="social-column statbottom" style="grid-area: social-end">&nbsp;</div>
                 </div>
             </fieldset>
             <fieldset id="template-selection">
                 <legend>Template</legend>
-                <div id="talent"></div>
-                <div id="psion"></div>
-                <div id="psiad"></div>
-                <div id="nova"></div>
-                <div id="inspired">
+                <div class="talent">
                     <label for="moment">Moment of Inspiration</label>
                     <textarea name="moment" id="moment"></textarea>
+                    <label for="assoc-attrib">Associated Attribute(s)</label>
+                    <input type="text" name="assoc-attrib" id="assoc-attrib"/>
+                    <fieldset>
+                        <legend>Gifts</legend>
+                    <label for="advantage_gift_1">Origin</label>
+                    <input type="text" name="gift" id="advantage_gift_1" />
+                    <label for="advantage_gift_2">Role</label>
+                    <input type="text" name="gift" id="advantage_gift_2" />
+                    <label for="advantage_gift_3">Society</label>
+                    <input type="text" name="gift" id="advantage_gift_3" />
+                    <label for="advantage_gift_4">Bonus</label>
+                    <input type="text" name="gift" id="advantage_gift_4" />
+                    </fieldset>
+                    <fieldset>
+                        <legend>Facets</legend>
+                        <label>Intuitive <dot-selector name="intuitive" max="5" min="0" default="0" value="0"></dot-selector></label>
+                        <label>Reflective <dot-selector name="reflective" max="5" min="0" default="0" value="0"></dot-selector></label>
+                        <label>Destructive <dot-selector name="destructive" max="5" min="0" default="0" value="0"></dot-selector></label>
+                        <hr>
+                        <p>Inspiration <span id="inspiration-score"></span></p>
+                    </fieldset>
+                </div>
+                <div class="psion"></div>
+                <div class="psiad"></div>
+                <div class="nova"></div>
+                <div class="inspired">
                     <fieldset>
                         <legend>Type of Inspired</legend>
                         <label>Daredevil <input type="radio" name="inspired_type" id="daredevil"
