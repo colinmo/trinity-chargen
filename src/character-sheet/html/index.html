@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-
+<!--
+    * [ ] Replace the type-and-select element with the new input+list element
+    * [ ] Calculate the skill point spend and update the path point indicators
+    * [ ] Calculate the edge point spend and update the path point indicators
+-->
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
     <meta name="author" content="Colin Morris">
@@ -237,8 +241,8 @@
     </style>
 
     <script>
-        var filledCircle = `&#x25C9;`,
-            emptyCircle = `&#x25EF;`;
+        var filledCircle = `⚫`,
+            emptyCircle = `⚪`;
         class DotSelector extends HTMLElement {
             constructor() {
                 super();
@@ -280,6 +284,8 @@
                 let thisSelect = document.createElement("SELECT"),
                     maxPlus1 = parseInt(this.max, 10) + 1;
                 thisSelect.name = this.name;
+                thisSelect.style.fontFamily = "'courier new''";
+                thisSelect.style.fontSize = "20px;";
                 for (let i = this.min; i < maxPlus1; i++) {
                     let thisOption = document.createElement("OPTION")
                     thisOption.value = i;
