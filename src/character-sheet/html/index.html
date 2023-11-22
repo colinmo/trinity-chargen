@@ -767,8 +767,11 @@
                     </legend>
                     <div class="just-skill">
                         <label for="role_path">Path</label>
-                        <type-and-select name="role_path" id2="role_path" default=""
-                            options="Aeon Trinity|Lamplighters"></type-and-select>
+                        <input list="role_paths" name="role_path" id="role_path">
+                        <datalist id="role_paths">
+                            <option value="Diplomat" data-skills="Aim|Pilot|Combat|Command">
+                            <option value="Researcher" data-skills="Larceny|Pilot|Science|Survival">
+                        </datalist>
                     </div>
                     </style>
                     <div class="skill-and-dots">
@@ -823,11 +826,13 @@
                             <alert-bar name="society-edge-points" message="2 edge points left"></alert-bar>
                         </span>
                     </legend>
-
                     <div class="just-skill">
                         <label for="society_path">Path</label>
-                        <type-and-select name="society_path" id2="society_path" default=""
-                            options="Aeon Trinity|Lamplighters"></type-and-select>
+                        <input list="society_paths" name="society_path" id="society_path">
+                        <datalist id="society_paths">
+                            <option value="Diplomat" data-skills="Aim|Pilot|Combat|Command">
+                            <option value="Researcher" data-skills="Larceny|Pilot|Science|Survival">
+                        </datalist>
                     </div>
                     </style>
                     <div class="skill-and-dots">
