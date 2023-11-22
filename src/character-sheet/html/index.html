@@ -351,6 +351,7 @@
                 // Known attributes
                 this.name = "";
                 this.options = [];
+                this.displayed = [];
                 this.default = "";
                 this.value = "";
                 this.id2 = "";
@@ -363,10 +364,10 @@
                 })
             }
 
-            setupOptions() {
+            setupOptions(theseOptions) {
                 this.select.innerHTML = "";
                 this.select.appendChild(document.createElement("OPTION"));
-                this.options.forEach((e) => {
+                theseOptions.forEach((e) => {
                     let thisOption = document.createElement("OPTION");
                     thisOption.value = e;
                     thisOption.selected = (e == this.default) ? " selected" : "";
@@ -375,14 +376,28 @@
                 });
             }
             static get observedAttributes() {
-                return ['name', 'options', 'value', 'default', 'id2'];
+                return ['name', 'options', 'value', 'default', 'id2', 'displayed'];
             }
 
             attributeChangedCallback(property, oldValue, newValue) {
                 if (oldValue == newValue) return;
                 if (property == "options") {
                     this.options = newValue.split("|")
-                    this.setupOptions();
+                    this.setupOptions(this.options);
+                } else if (property == "displayed") {
+                    console.log('changed displayed')
+                    if (newValue == null) {
+                        this.setupOptions(this.options);
+                        this.select.disabled = false;
+                    } else {
+                        this.displayed = newValue.split("|");
+                        this.setupOptions(this.displayed);
+                        if (this.displayed.length == 1) {
+                            this.value = this.displayed[0];
+                            this.select.value = this.displayed[0];
+                            this.select.disabled = true;
+                        }
+                    }
                 } else {
                     this[property] = newValue;
                 }
@@ -393,7 +408,7 @@
                 this.select.name = this.name;
                 this.select.id = this.id2;
                 this.select.setAttribute("style", "width:100%;");
-                this.setupOptions();
+                this.setupOptions(this.options);
                 this.select.onChange = (x) => {
                     this.value = x.target.value;
                 }
@@ -430,10 +445,10 @@
             setupOptions() {
                 this.select.innerHTML = "";
                 let thisOption = document.createElement("OPTION");
-                    thisOption.value = "";
-                    thisOption.selected = ("" == this.default) ? " selected" : "";
-                    thisOption.innerText = "";
-                    this.select.appendChild(thisOption);
+                thisOption.value = "";
+                thisOption.selected = ("" == this.default) ? " selected" : "";
+                thisOption.innerText = "";
+                this.select.appendChild(thisOption);
                 this.options.forEach((e) => {
                     let thisOption = document.createElement("OPTION");
                     thisOption.value = e;
@@ -510,7 +525,7 @@
                 this.appendChild(thisText);
                 this.appendChild(this.select);
                 this.setAttribute('tabindex', 0);
-                this.addEventListener("blur", (x) => { console.log("Blurred")});
+                this.addEventListener("blur", (x) => { console.log("Blurred") });
             }
         }
         customElements.define('type-and-select', TypeAndSelect);
@@ -691,13 +706,10 @@
                     </legend>
                     <div class="just-skill">
                         <label for="origin_path">Path</label>
-                        <type-and-select name="origin_path" id2="origin_path" default=""
-                            options="Aeon Trinity|Lamplighters"
-                            onchange="() => { updateSkills('origin')}"></type-and-select>
-                        <input list="origin_paths" name="origin_path">
+                        <input list="origin_paths" name="origin_path" id="origin_path">
                         <datalist id="origin_paths">
-                            <option value="Aeon Trinity">
-                            <option value="Lamplighters">
+                            <option value="Aeon Trinity" data-skills="Aim|Pilot|Combat|Command">
+                            <option value="Lamplighters" data-skills="Larceny|Pilot|Science|Survival">
                         </datalist>
                     </div>
                     </style>
@@ -864,6 +876,30 @@
                     </div>
                 </fieldset>
             </fieldset>
+            <script>
+                document.querySelectorAll('input[list$="_paths"]').forEach((e) => {
+                    e.addEventListener('input', (event) => {
+                        let prefix = event.target.id.split("_")[0];
+                        if (event.inputType == 'insertReplacementText') {
+                            let existing = document.querySelector(`#${event.target.id} + datalist option[value="${event.data}"]`);
+                            if (existing) {
+                                let valuesToUse = existing.getAttribute('data-skills').split("|");
+                                valuesToUse.forEach((e, i) => {
+                                    let index = i + 1
+                                    console.log(`${prefix}_skill_${index}_name`, e)
+                                    document.querySelector(`repeat-selector[name="${prefix}_skill_${index}_name"]`).setAttribute('displayed', e);
+                                })
+                            }
+                        } else {
+                            for (index = 1; index < 5; index++) {
+                                document.querySelector(`repeat-selector[name="${prefix}_skill_${index}_name"]`).removeAttribute('displayed');
+                            }
+                            console.log(event.inputType);
+                        }
+                        console.log(`${event.target.id}`);
+                    });
+                });
+            </script>
             <fieldset id="skill-selection">
                 <legend>Skills <alert-bar name="skill_points" message="6 skill points left"></alert-bar></legend>
                 <div></div>
