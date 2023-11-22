@@ -156,9 +156,13 @@
             text-decoration: underline solid 3px;
         }
 
-        div.talent, div.psion, div.nova, div.inspired {
+        div.talent,
+        div.psion,
+        div.nova,
+        div.inspired {
             display: none;
         }
+
         input#talent:checked~form div.talent,
         input#psion:checked~form div.psion,
         input#nova:checked~form div.nova,
@@ -234,7 +238,7 @@
 
     <script>
         var filledCircle = `&#x25C9;`,
-	    emptyCircle = `&#x25EF;`;
+            emptyCircle = `&#x25EF;`;
         class DotSelector extends HTMLElement {
             constructor() {
                 super();
@@ -423,9 +427,13 @@
             static get observedAttributes() {
                 return ['name', 'options', 'value', 'default', 'id2'];
             }
-
             setupOptions() {
                 this.select.innerHTML = "";
+                let thisOption = document.createElement("OPTION");
+                    thisOption.value = "";
+                    thisOption.selected = ("" == this.default) ? " selected" : "";
+                    thisOption.innerText = "";
+                    this.select.appendChild(thisOption);
                 this.options.forEach((e) => {
                     let thisOption = document.createElement("OPTION");
                     thisOption.value = e;
@@ -436,13 +444,18 @@
             }
             attributeChangedCallback(property, oldValue, newValue) {
                 if (oldValue == newValue) return;
-                if (property == "options") {
-                    this[property] = newValue.split("|")
-                    console.log(this[property]);
-                    this.setupOptions();
-                } else {
-                    console.log(property, this[property]);
-                    this[property] = newValue;
+                switch (property) {
+                    case 'options':
+                        this['options'] = newValue.split("|")
+                        this.setupOptions();
+                        break;
+                    case 'value':
+                        console.log(`Setting ${property} as ${newValue} ; was ${oldValue}`)
+                        this['value'] = newValue;
+                        console.log(this.name, this.value, this);
+                        break;
+                    default:
+                        this[property] = newValue;
                 }
             }
 
@@ -465,9 +478,7 @@
                     };
                     if (foundCount) {
                         this.select.style.display = "";
-
                     } else {
-
                         this.select.style.display = "none";
                     }
                 }
@@ -478,24 +489,28 @@
                 thisText.id = this.id2;
                 thisText.type = "text";
                 thisText.setAttribute("style", "width:100%;")
+                thisText.addEventListener("input", (x) => {
+                    console.log(`Filter ${x.target.value}`)
+                    thisText.value = x.target.value;
+                    this.setAttribute("value", x.target.value);
+                    this.filterSelect();
+                });
 
                 this.select.name = this.name + "_s";
                 this.select.id = this.id2 + "_s";
                 this.select.size = "10";
                 this.select.setAttribute("style", "width:100%;display:none;");
                 this.select.addEventListener("change", (x) => {
+                    console.log(`Setting my value ${x.target.value}`);
                     thisText.value = x.target.value;
-                    this.value = x.target.value;
-                    this.select.style.display = "none";
+                    this.setAttribute("value", x.target.value);
                 })
-                thisText.addEventListener("input", (x) => {
-                    this.value = x.target.value;
-                    this.filterSelect();
-                });
 
                 this.innerHTML = "";
                 this.appendChild(thisText);
                 this.appendChild(this.select);
+                this.setAttribute('tabindex', 0);
+                this.addEventListener("blur", (x) => { console.log("Blurred")});
             }
         }
         customElements.define('type-and-select', TypeAndSelect);
@@ -518,7 +533,7 @@
             }
 
             connectedCallback() {
-                this.setAttribute("style", "padding:0 5px;display:inline-block;position:relative;border: thin solid black; background: black; color: white; border-radius: 5px;");
+                this.setAttribute("style", "");
                 this.innerHTML = this.message;
             }
         }
@@ -557,13 +572,31 @@
         details summary::marker {
             display: none;
         }
-        details > summary {
+
+        details>summary {
             list-style: none;
-            float: right;
+            text-align: right;
+        }
+
+        fieldset {
+            position: relative;
+        }
+
+        fieldset legend span {
+            position: absolute;
+            right: 0;
+        }
+
+        fieldset legend span alert-bar {
+            padding: 0 5px;
+            border: thin solid black;
+            background: black;
+            color: white;
+            border-radius: 5px;
         }
     </style>
     <main id="trinity" class="panel">
-        
+
         <header>
             <h1 class="p-name">Trinity character creator</h1>
             <!--<nav class="button-bar disabled">
@@ -603,7 +636,7 @@
             <fieldset id="class-of-char">
                 <legend>Character type</legend>
                 <details>
-                    <summary>&#x1F6C8;</summary>
+                    <summary>&#x24D8;</summary>
                     <p>Ideas</p>
                     <ul>
                         <li>Have character sheet in an extra window or able to be a beside tab to show the character as
@@ -651,13 +684,21 @@
                 <legend>Paths</legend>
                 <fieldset id="origin">
                     <legend>Origin
-                        <alert-bar name="origin-skill-points" message="3 skill points left"></alert-bar>
-                        <alert-bar name="origin-edge-points" message="2 edge points left"></alert-bar>
+                        <span>
+                            <alert-bar name="origin-skill-points" message="3 skill points left"></alert-bar>
+                            <alert-bar name="origin-edge-points" message="2 edge points left"></alert-bar>
+                        </span>
                     </legend>
                     <div class="just-skill">
                         <label for="origin_path">Path</label>
                         <type-and-select name="origin_path" id2="origin_path" default=""
-                            options="Aeon Trinity|Lamplighters"></type-and-select>
+                            options="Aeon Trinity|Lamplighters"
+                            onchange="() => { updateSkills('origin')}"></type-and-select>
+                        <input list="origin_paths" name="origin_path">
+                        <datalist id="origin_paths">
+                            <option value="Aeon Trinity">
+                            <option value="Lamplighters">
+                        </datalist>
                     </div>
                     </style>
                     <div class="skill-and-dots">
@@ -707,8 +748,10 @@
                 </fieldset>
                 <fieldset id="role">
                     <legend>Role
-                        <alert-bar name="role-skill-points" message="3 skill points left"></alert-bar>
-                        <alert-bar name="role-edge-points" message="2 edge points left"></alert-bar>
+                        <span>
+                            <alert-bar name="role-skill-points" message="3 skill points left"></alert-bar>
+                            <alert-bar name="role-edge-points" message="2 edge points left"></alert-bar>
+                        </span>
                     </legend>
                     <div class="just-skill">
                         <label for="role_path">Path</label>
@@ -763,8 +806,10 @@
                 </fieldset>
                 <fieldset id="society">
                     <legend>Society
-                        <alert-bar name="society-skill-points" message="3 skill points left"></alert-bar>
-                        <alert-bar name="society-edge-points" message="2 edge points left"></alert-bar>
+                        <span>
+                            <alert-bar name="society-skill-points" message="3 skill points left"></alert-bar>
+                            <alert-bar name="society-edge-points" message="2 edge points left"></alert-bar>
+                        </span>
                     </legend>
 
                     <div class="just-skill">
@@ -855,18 +900,21 @@
             </style>
             <fieldset id="attribute-selection">
                 <style>
-                    label.stat.stattop  {
+                    label.stat.stattop {
                         border-top: thin solid var(--border-color);
                         padding-top: 5px;
                     }
-                    label.stat, div.statbottom {
+
+                    label.stat,
+                    div.statbottom {
                         border-left: thin solid var(--border-color);
                         border-right: thin solid var(--border-color);
                         padding: 0 5px;
                     }
+
                     div.statbottom {
                         border-bottom: thin solid var(--border-color);
-                        height:5px;
+                        height: 5px;
                     }
                 </style>
                 <legend>Attributes</legend>
@@ -921,23 +969,26 @@
                     <label for="moment">Moment of Inspiration</label>
                     <textarea name="moment" id="moment"></textarea>
                     <label for="assoc-attrib">Associated Attribute(s)</label>
-                    <input type="text" name="assoc-attrib" id="assoc-attrib"/>
+                    <input type="text" name="assoc-attrib" id="assoc-attrib" />
                     <fieldset>
                         <legend>Gifts</legend>
-                    <label for="advantage_gift_1">Origin</label>
-                    <input type="text" name="gift" id="advantage_gift_1" />
-                    <label for="advantage_gift_2">Role</label>
-                    <input type="text" name="gift" id="advantage_gift_2" />
-                    <label for="advantage_gift_3">Society</label>
-                    <input type="text" name="gift" id="advantage_gift_3" />
-                    <label for="advantage_gift_4">Bonus</label>
-                    <input type="text" name="gift" id="advantage_gift_4" />
+                        <label for="advantage_gift_1">Origin</label>
+                        <input type="text" name="gift" id="advantage_gift_1" />
+                        <label for="advantage_gift_2">Role</label>
+                        <input type="text" name="gift" id="advantage_gift_2" />
+                        <label for="advantage_gift_3">Society</label>
+                        <input type="text" name="gift" id="advantage_gift_3" />
+                        <label for="advantage_gift_4">Bonus</label>
+                        <input type="text" name="gift" id="advantage_gift_4" />
                     </fieldset>
                     <fieldset>
                         <legend>Facets</legend>
-                        <label>Intuitive <dot-selector name="intuitive" max="5" min="0" default="0" value="0"></dot-selector></label>
-                        <label>Reflective <dot-selector name="reflective" max="5" min="0" default="0" value="0"></dot-selector></label>
-                        <label>Destructive <dot-selector name="destructive" max="5" min="0" default="0" value="0"></dot-selector></label>
+                        <label>Intuitive <dot-selector name="intuitive" max="5" min="0" default="0"
+                                value="0"></dot-selector></label>
+                        <label>Reflective <dot-selector name="reflective" max="5" min="0" default="0"
+                                value="0"></dot-selector></label>
+                        <label>Destructive <dot-selector name="destructive" max="5" min="0" default="0"
+                                value="0"></dot-selector></label>
                         <hr>
                         <p>Inspiration <span id="inspiration-score"></span></p>
                     </fieldset>
@@ -1047,10 +1098,12 @@
                         grid-area: attributes;
                     }
 
-                    #character-sheet .skillsc1 dot-label:nth-child(odd), #character-sheet .skillsc2 dot-label:nth-child(odd) {
+                    #character-sheet .skillsc1 dot-label:nth-child(odd),
+                    #character-sheet .skillsc2 dot-label:nth-child(odd) {
                         background: var(--table-alt-color);
                         color: var(--table-alt-text);
                     }
+
                     #character-sheet .skillsc1 {
                         display: grid;
                         grid-area: skillsc1;
@@ -1082,7 +1135,9 @@
                     }
                 </style>
                 <div>
-                    <div class="title" style="background: var(--title-img) no-repeat no-repeat center center;height: var(--title-img-height)"></div>
+                    <div class="title"
+                        style="background: var(--title-img) no-repeat no-repeat center center;height: var(--title-img-height)">
+                    </div>
                     <div class="top1">
                         <div data-field="name"><span>Name:</span> <span class="value">...</span></div>
                         <div data-field="player"><span>Player:</span> <span class="value">...</span></div>
@@ -1105,8 +1160,10 @@
                 </div>
                 <div>
                     <div class="aspirheader">ASPIRATIONS</div>
-                    <div data-field="short_aspiration_1"><span>Short aspiration 1</span> <span class="value">...</span></div>
-                    <div data-field="short_aspiration_2"><span>Short aspiration 2</span> <span class="value">...</span></div>
+                    <div data-field="short_aspiration_1"><span>Short aspiration 1</span> <span class="value">...</span>
+                    </div>
+                    <div data-field="short_aspiration_2"><span>Short aspiration 2</span> <span class="value">...</span>
+                    </div>
                 </div>
             </fieldset>
         </form>
@@ -1272,7 +1329,7 @@
                 // Skills
                 const skillsKeys = Object.keys(this.skills),
                     halfWayIndex = Math.ceil(skillsKeys.length / 2),
-                    leftSkills = skillsKeys.slice(0,halfWayIndex),
+                    leftSkills = skillsKeys.slice(0, halfWayIndex),
                     rightSkills = skillsKeys.slice(halfWayIndex),
                     leftColumn = document.querySelector('.skillsc1'),
                     rightColumn = document.querySelector('.skillsc2');
