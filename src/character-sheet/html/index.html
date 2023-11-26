@@ -241,8 +241,8 @@
     </style>
 
     <script>
-        var filledCircle = `⚫`,
-            emptyCircle = `⚪`;
+        var filledCircle = `●`,
+            emptyCircle = `○`;
         class DotSelector extends HTMLElement {
             constructor() {
                 super();
@@ -891,8 +891,8 @@
                 document.querySelectorAll('input[list$="_paths"]').forEach((e) => {
                     e.addEventListener('input', (event) => {
                         let prefix = event.target.id.split("_")[0];
-                        if (event.inputType == 'insertReplacementText') {
-                            let existing = document.querySelector(`#${event.target.id} + datalist option[value="${event.data}"]`);
+			let textData = event.target.value;
+                        let existing = document.querySelector(`#${event.target.id} + datalist option[value="${textData}"]`);
                             if (existing) {
                                 let valuesToUse = existing.getAttribute('data-skills').split("|");
                                 valuesToUse.forEach((e, i) => {
@@ -900,7 +900,6 @@
                                     console.log(`${prefix}_skill_${index}_name`, e)
                                     document.querySelector(`repeat-selector[name="${prefix}_skill_${index}_name"]`).setAttribute('displayed', e);
                                 })
-                            }
                         } else {
                             for (index = 1; index < 5; index++) {
                                 document.querySelector(`repeat-selector[name="${prefix}_skill_${index}_name"]`).removeAttribute('displayed');
