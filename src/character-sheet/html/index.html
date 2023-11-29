@@ -4,6 +4,7 @@
     * [ ] Replace the type-and-select element with the new input+list element
     * [ ] Calculate the skill point spend and update the path point indicators
     * [ ] Calculate the edge point spend and update the path point indicators
+    * [ ] Move the Character Type to be part of the "Create New Character" or a "Change my Type" button
 -->
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
@@ -911,19 +912,19 @@
                 });
             </script>
             <fieldset id="skill-selection">
-                <legend>Skills <alert-bar name="skill_points" message="6 skill points left"></alert-bar></legend>
+                <legend>Skills <span><alert-bar name="skill_points" message="6 skill points left"></alert-bar></span></legend>
                 <div></div>
             </fieldset>
             <style>
                 #attribute-layout {
                     display: grid;
                     grid-template-areas:
-                        '. mental physical social'
-                        'force intellect might presence'
-                        'finesse cunning dexterity manipulation'
-                        'resilience resolve stamina composure'
-                        '. mental-end physical-end social-end';
-                    grid-template-columns: 1fr 1fr 1fr 1fr;
+                        '. mental sp1a physical spa social'
+                        'force intellect sp1b might spb presence'
+                        'finesse cunning sp1c dexterity spc manipulation'
+                        'resilience resolve sp1d stamina spd composure'
+                        '. mental-end sp1e physical-end spe social-end';
+                    grid-template-columns: 1fr 1fr 5px 1fr 5px 1fr;
                 }
 
                 #attribute-selection label.stat {
@@ -939,7 +940,8 @@
                 .check:nth-of-type(2n+4),
                 .mental-column:nth-of-type(2n+5),
                 .physical-column:nth-of-type(2n+4),
-                .social-column:is(:nth-of-type(2n+5)) {
+                .social-column:is(:nth-of-type(2n+5)),
+                .space-column:is(:nth-of-type(2n+5)) {
                     background: var(--table-alt-color);
                     color: var(--table-alt-text);
                 }
@@ -1007,6 +1009,14 @@
                     <label class="stat social-column" style="grid-area: composure"><span>Composure</span> <dot-selector
                             min="1" max="5" default="1" value="1" name="composure"></dot-selector></label>
                     <div class="social-column statbottom" style="grid-area: social-end">&nbsp;</div>
+                    <div class="space-column" style="grid-area: sp1a"></div>
+                    <div class="space-column" style="grid-area: sp1b"></div>
+                    <div class="space-column" style="grid-area: sp1c"></div>
+                    <div class="space-column" style="grid-area: sp1d"></div>
+                    <div class="space-column" style="grid-area: spa"></div>
+                    <div class="space-column" style="grid-area: spb"></div>
+                    <div class="space-column" style="grid-area: spc"></div>
+                    <div class="space-column" style="grid-area: spd"></div>
                 </div>
             </fieldset>
             <fieldset id="template-selection">
