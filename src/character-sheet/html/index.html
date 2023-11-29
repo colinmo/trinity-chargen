@@ -890,9 +890,9 @@
             <script>
                 document.querySelectorAll('input[list$="_paths"]').forEach((e) => {
                     e.addEventListener('input', (event) => {
-                        let prefix = event.target.id.split("_")[0];
-			let textData = event.target.value;
-                        let existing = document.querySelector(`#${event.target.id} + datalist option[value="${textData}"]`);
+                        let prefix = event.target.id.split("_")[0],
+                            textData = event.target.value,
+                            existing = document.querySelector(`#${event.target.id} + datalist option[value="${textData}"]`);
                             if (existing) {
                                 let valuesToUse = existing.getAttribute('data-skills').split("|");
                                 valuesToUse.forEach((e, i) => {
