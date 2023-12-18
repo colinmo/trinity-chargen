@@ -567,7 +567,6 @@
                     })
                     this.watch = "#" + newValue.replaceAll(",", ",#")
                     this.watching = document.querySelectorAll(this.watch);
-                    console.log(newValue)
                     this.watching.forEach((x) => {
                         x.addEventListener('change', this.recalculate)
                     })
@@ -588,24 +587,19 @@
                         this.watching.forEach((x) => {
                             x.addEventListener('change', function() { that.recalculate() } )
                         })
-                        console.log(this.name + " Watching", this.watching, "}|", this.watch);
                     }
                 })
             }
 
             updateMessage() {
                 this.innerHTML = this.message.replace('X', this.points);
-
             }
 
             recalculate() {
-                console.log(this.name + " recalc")
+                console.log(this);
                 this.points = parseInt(this.max, 10);
-                console.log(this.points);
                 this.watching.forEach((x) => {
-                    console.log(x.value);
                     this.points -= parseInt(x.value, 10);
-                    console.log(this.points);
                 });
                 this.updateMessage();
             }
@@ -760,7 +754,9 @@
                         <span>
                             <alert-bar name="origin-skill-points" max="3" message="X skill points left"
                                 watch="origin_skill_1_value,origin_skill_2_value,origin_skill_3_value,origin_skill_4_value"></alert-bar>
-                            <alert-bar name="origin-edge-points" max="2" message="X edge points left"></alert-bar>
+                            <alert-bar name="origin-edge-points" max="2" message="X edge points left"
+                            watch="origin_edge_1_value,origin_edge_2_value"></alert-bar>
+
                         </span>
                     </legend>
                     <div class="just-skill">
@@ -804,13 +800,13 @@
                         <label for="origin_edge_1">Edge (1)</label>
                         <type-and-select name="origin_edge_1_name" id2="origin_edge_1_name" default=""
                             options="One|Two"></type-and-select>
-                        <dot-selector name="origin_edge_1_value" max="5"></dot-selector>
+                        <dot-selector name="origin_edge_1_value" id="origin_edge_1_value" max="5"></dot-selector>
                     </div>
                     <div class="skill-and-dots">
                         <label for="origin_edge_2_name">Edge (2)</label>
                         <type-and-select name="origin_edge_2_name" id2="origin_edge_2_name" default=""
                             options="One|Two"></type-and-select>
-                        <dot-selector name="origin_edge_2_value" max="5"></dot-selector>
+                        <dot-selector name="origin_edge_2_value" id="origin_edge_2_value" max="5"></dot-selector>
                     </div>
                     <div class="just-skill">
                         <label for="origin_path_condition">Path condition</label>
@@ -820,8 +816,10 @@
                 <fieldset id="role">
                     <legend>Role
                         <span>
-                            <alert-bar name="role-skill-points" message="3 skill points left"></alert-bar>
-                            <alert-bar name="role-edge-points" message="2 edge points left"></alert-bar>
+                            <alert-bar name="role-skill-points" max="3" message="X skill points left"
+                            watch="role_skill_1_value,role_skill_2_value,role_skill_3_value,role_skill_4_value"></alert-bar>
+                            <alert-bar name="role-edge-points" max="2" message="X edge points left"
+                            watch="role_edge_1_value,role_edge_2_value"></alert-bar>
                         </span>
                     </legend>
                     <div class="just-skill">
@@ -837,25 +835,25 @@
                         <label for="role_skill_1_name">Skill (1)</label>
                         <repeat-selector name="role_skill_1_name" id2="role_skill_1_name" default=""
                             options=""></repeat-selector>
-                        <dot-selector name="role_skill_1_value" max="5"></dot-selector>
+                        <dot-selector name="role_skill_1_value" id="role_skill_1_value"max="5"></dot-selector>
                     </div>
                     <div class="skill-and-dots">
                         <label for="role_skill_2_name">Skill (2)</label>
                         <repeat-selector name="role_skill_2_name" id2="role_skill_2_name" default=""
                             options=""></repeat-selector>
-                        <dot-selector name="role_skill_2_value" max="5"></dot-selector>
+                        <dot-selector name="role_skill_2_value" id="role_skill_2_value"max="5"></dot-selector>
                     </div>
                     <div class="skill-and-dots">
                         <label for="role_skill_3_name">Skill (3)</label>
                         <repeat-selector name="role_skill_3_name" id2="role_skill_3_name" default=""
                             options=""></repeat-selector>
-                        <dot-selector name="role_skill_3_value" max="5"></dot-selector>
+                        <dot-selector name="role_skill_3_value" id="role_skill_3_value"max="5"></dot-selector>
                     </div>
                     <div class="skill-and-dots">
                         <label for="role_skill_4_name">Skill (4)</label>
                         <repeat-selector name="role_skill_4_name" id2="role_skill_4_name" default=""
                             options=""></repeat-selector>
-                        <dot-selector name="role_skill_4_value" max="5"></dot-selector>
+                        <dot-selector name="role_skill_4_value" id="role_skill_4_value"max="5"></dot-selector>
                     </div>
                     <div class="just-skill">
                         <label for="role_gca">Group, contact and access connections</label>
@@ -881,8 +879,10 @@
                 <fieldset id="society">
                     <legend>Society
                         <span>
-                            <alert-bar name="society-skill-points" message="3 skill points left"></alert-bar>
-                            <alert-bar name="society-edge-points" message="2 edge points left"></alert-bar>
+                            <alert-bar name="society-skill-points" max="3" message="X skill points left"
+                            watch="society_skill_1_value,society_skill_2_value,society_skill_3_value,society_skill_4_value"></alert-bar>
+                            <alert-bar name="society-edge-points" max="2" message="X edge points left"
+                            watch="society_edge_1_value,society_edge_2_value"></alert-bar>
                         </span>
                     </legend>
                     <div class="just-skill">
@@ -898,25 +898,25 @@
                         <label for="society_skill_1_name">Skill (1)</label>
                         <repeat-selector name="society_skill_1_name" id2="society_skill_1_name" default=""
                             options=""></repeat-selector>
-                        <dot-selector name="society_skill_1_value" max="5"></dot-selector>
+                        <dot-selector name="society_skill_1_value" id="society_skill_1_value"max="5"></dot-selector>
                     </div>
                     <div class="skill-and-dots">
                         <label for="society_skill_2_name">Skill (2)</label>
                         <repeat-selector name="society_skill_2_name" id2="society_skill_2_name" default=""
                             options=""></repeat-selector>
-                        <dot-selector name="society_skill_2_value" max="5"></dot-selector>
+                        <dot-selector name="society_skill_2_value" id="society_skill_2_value"max="5"></dot-selector>
                     </div>
                     <div class="skill-and-dots">
                         <label for="society_skill_3_name">Skill (3)</label>
                         <repeat-selector name="society_skill_3_name" id2="society_skill_3_name" default=""
                             options=""></repeat-selector>
-                        <dot-selector name="society_skill_3_value" max="5"></dot-selector>
+                        <dot-selector name="society_skill_3_value" id="society_skill_3_value"max="5"></dot-selector>
                     </div>
                     <div class="skill-and-dots">
                         <label for="society_skill_4_name">Skill (4)</label>
                         <repeat-selector name="society_skill_4_name" id2="society_skill_4_name" default=""
                             options=""></repeat-selector>
-                        <dot-selector name="society_skill_4_value" max="5"></dot-selector>
+                        <dot-selector name="society_skill_4_value" id="society_skill_4_value"max="5"></dot-selector>
                     </div>
                     <div class="just-skill">
                         <label for="society_gca">Group, contact and access connections</label>
