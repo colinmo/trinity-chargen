@@ -565,7 +565,7 @@
                     this.watching.forEach((x) => {
                         x.removeEventListener('change', this.recalculate)
                     })
-                    this.watch = "#" + newValue.replaceAll(",", ",#")
+                    this.watch = newValue
                     this.watching = document.querySelectorAll(this.watch);
                     this.watching.forEach((x) => {
                         x.addEventListener('change', this.recalculate)
@@ -753,9 +753,9 @@
                     <legend>Origin
                         <span>
                             <alert-bar name="origin-skill-points" max="3" message="X skill points left"
-                                watch="origin_skill_1_value,origin_skill_2_value,origin_skill_3_value,origin_skill_4_value"></alert-bar>
+                                watch="dot-selector[name^='origin_skill_'][name$='_value']"></alert-bar>
                             <alert-bar name="origin-edge-points" max="2" message="X edge points left"
-                            watch="origin_edge_1_value,origin_edge_2_value"></alert-bar>
+                            watch="dot-selector[name^=origin_edge_][name$=_value]"></alert-bar>
 
                         </span>
                     </legend>
@@ -817,9 +817,9 @@
                     <legend>Role
                         <span>
                             <alert-bar name="role-skill-points" max="3" message="X skill points left"
-                            watch="role_skill_1_value,role_skill_2_value,role_skill_3_value,role_skill_4_value"></alert-bar>
+                            watch="dot-selector[name^='role_skill_'][name$='_value']"></alert-bar>
                             <alert-bar name="role-edge-points" max="2" message="X edge points left"
-                            watch="role_edge_1_value,role_edge_2_value"></alert-bar>
+                            watch="dot-selector[name^='role_edge_'][name$='_value']"></alert-bar>
                         </span>
                     </legend>
                     <div class="just-skill">
@@ -880,9 +880,9 @@
                     <legend>Society
                         <span>
                             <alert-bar name="society-skill-points" max="3" message="X skill points left"
-                            watch="society_skill_1_value,society_skill_2_value,society_skill_3_value,society_skill_4_value"></alert-bar>
+                            watch="dot-selector[name^='society_skill_'][name$='_value']"></alert-bar>
                             <alert-bar name="society-edge-points" max="2" message="X edge points left"
-                            watch="society_edge_1_value,society_edge_2_value"></alert-bar>
+                            watch="dot-selector[name^='society_edge_'][name$='_value']"></alert-bar>
                         </span>
                     </legend>
                     <div class="just-skill">
