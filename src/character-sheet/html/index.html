@@ -6,10 +6,12 @@
     * [ ] Calculate the edge point spend and update the path point indicators
     * [ ] Move the Character Type to be part of the "Create New Character" or a "Change my Type" button
 -->
+
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
     <meta name="author" content="Colin Morris">
     <title>Trinity Character Engine</title>
+    <link rel="icon" type="image/x-icon" href="https://vonexplaino.com/favicon.ico">
     <link href="https://fonts.cdnfonts.com/css/futura-windows" rel="stylesheet">
     <style>
         :root {
@@ -276,6 +278,7 @@
                 this[property] = newValue;
                 if (property == "value" && this.value < this.min) {
                     this.value = this.min;
+                    document.dispatchEvent(new Event('change', { 'bubbles': true }))
                 }
             }
 
@@ -299,6 +302,7 @@
                 // to what it was changed to in the attribute
                 thisSelect.onchange = (x) => {
                     this.value = x.target.value;
+                    console.log("Bam");
                 }
 
                 // Set the HTML for the custom element
@@ -318,6 +322,7 @@
                 this.name = "";
                 this.value = 0;
                 this.max = 5;
+                this.watch = [];
             }
 
             static get observedAttributes() {
@@ -331,6 +336,7 @@
                 // This just sets the local property to the new one
                 if (oldValue === newValue) return;
                 this[property] = newValue;
+
                 this.connectedCallback()
             }
 
@@ -543,20 +549,65 @@
 
                 this.name = "";
                 this.message = "";
+                this.points = 0;
+                this.max = 0;
+                this.watch = [];
+                this.watching = [];
             }
 
             static get observedAttributes() {
-                return ['name', 'message'];
+                return ['name', 'message', 'max', 'watch'];
             }
 
             attributeChangedCallback(property, oldValue, newValue) {
                 if (oldValue == newValue) return;
-                this[property] = newValue;
+                if (property == "watch") {
+                    this.watching.forEach((x) => {
+                        x.removeEventListener('change', this.recalculate)
+                    })
+                    this.watch = "#" + newValue.replaceAll(",", ",#")
+                    this.watching = document.querySelectorAll(this.watch);
+                    console.log(newValue)
+                    this.watching.forEach((x) => {
+                        x.addEventListener('change', this.recalculate)
+                    })
+                    console.log("Watching", this.watching);
+                } else {
+                    this[property] = newValue;
+                }
             }
 
             connectedCallback() {
                 this.setAttribute("style", "");
-                this.innerHTML = this.message;
+                this.recalculate();
+                this.updateMessage()
+                document.addEventListener('DOMContentLoaded', (x) => {
+                    if (this.watch != "") {
+                        this.watching = document.querySelectorAll(this.watch);
+                        var that = this;
+                        this.watching.forEach((x) => {
+                            x.addEventListener('change', function() { that.recalculate() } )
+                        })
+                        console.log(this.name + " Watching", this.watching, "}|", this.watch);
+                    }
+                })
+            }
+
+            updateMessage() {
+                this.innerHTML = this.message.replace('X', this.points);
+
+            }
+
+            recalculate() {
+                console.log(this.name + " recalc")
+                this.points = parseInt(this.max, 10);
+                console.log(this.points);
+                this.watching.forEach((x) => {
+                    console.log(x.value);
+                    this.points -= parseInt(x.value, 10);
+                    console.log(this.points);
+                });
+                this.updateMessage();
             }
         }
         customElements.define('alert-bar', AlertBar);
@@ -707,8 +758,9 @@
                 <fieldset id="origin">
                     <legend>Origin
                         <span>
-                            <alert-bar name="origin-skill-points" message="3 skill points left"></alert-bar>
-                            <alert-bar name="origin-edge-points" message="2 edge points left"></alert-bar>
+                            <alert-bar name="origin-skill-points" max="3" message="X skill points left"
+                                watch="origin_skill_1_value,origin_skill_2_value,origin_skill_3_value,origin_skill_4_value"></alert-bar>
+                            <alert-bar name="origin-edge-points" max="2" message="X edge points left"></alert-bar>
                         </span>
                     </legend>
                     <div class="just-skill">
@@ -724,25 +776,25 @@
                         <label for="origin_skill_1_name">Skill (1)</label>
                         <repeat-selector name="origin_skill_1_name" id2="origin_skill_1_name" default=""
                             options=""></repeat-selector>
-                        <dot-selector name="origin_skill_1_value" max="5"></dot-selector>
+                        <dot-selector name="origin_skill_1_value" id="origin_skill_1_value" max="5"></dot-selector>
                     </div>
                     <div class="skill-and-dots">
                         <label for="origin_skill_2_name">Skill (2)</label>
                         <repeat-selector name="origin_skill_2_name" id2="origin_skill_2_name" default=""
                             options=""></repeat-selector>
-                        <dot-selector name="origin_skill_2_value" max="5"></dot-selector>
+                        <dot-selector name="origin_skill_2_value" id="origin_skill_2_value" max="5"></dot-selector>
                     </div>
                     <div class="skill-and-dots">
                         <label for="origin_skill_3_name">Skill (3)</label>
                         <repeat-selector name="origin_skill_3_name" id2="origin_skill_3_name" default=""
                             options=""></repeat-selector>
-                        <dot-selector name="origin_skill_3_value" max="5"></dot-selector>
+                        <dot-selector name="origin_skill_3_value" id="origin_skill_3_value" max="5"></dot-selector>
                     </div>
                     <div class="skill-and-dots">
                         <label for="origin_skill_4_name">Skill (4)</label>
                         <repeat-selector name="origin_skill_4_name" id2="origin_skill_4_name" default=""
                             options=""></repeat-selector>
-                        <dot-selector name="origin_skill_4_value" max="5"></dot-selector>
+                        <dot-selector name="origin_skill_4_value" id="origin_skill_4_value" max="5"></dot-selector>
                     </div>
                     <div class="just-skill">
                         <label for="origin_gca">Group, contact and access connections</label>
@@ -894,13 +946,13 @@
                         let prefix = event.target.id.split("_")[0],
                             textData = event.target.value,
                             existing = document.querySelector(`#${event.target.id} + datalist option[value="${textData}"]`);
-                            if (existing) {
-                                let valuesToUse = existing.getAttribute('data-skills').split("|");
-                                valuesToUse.forEach((e, i) => {
-                                    let index = i + 1
-                                    console.log(`${prefix}_skill_${index}_name`, e)
-                                    document.querySelector(`repeat-selector[name="${prefix}_skill_${index}_name"]`).setAttribute('displayed', e);
-                                })
+                        if (existing) {
+                            let valuesToUse = existing.getAttribute('data-skills').split("|");
+                            valuesToUse.forEach((e, i) => {
+                                let index = i + 1
+                                console.log(`${prefix}_skill_${index}_name`, e)
+                                document.querySelector(`repeat-selector[name="${prefix}_skill_${index}_name"]`).setAttribute('displayed', e);
+                            })
                         } else {
                             for (index = 1; index < 5; index++) {
                                 document.querySelector(`repeat-selector[name="${prefix}_skill_${index}_name"]`).removeAttribute('displayed');
@@ -912,7 +964,8 @@
                 });
             </script>
             <fieldset id="skill-selection">
-                <legend>Skills <span><alert-bar name="skill_points" message="6 skill points left"></alert-bar></span></legend>
+                <legend>Skills <span><alert-bar name="skill_points" message="6 skill points left"></alert-bar></span>
+                </legend>
                 <div></div>
             </fieldset>
             <style>
@@ -1422,6 +1475,9 @@
         var character = new BaselineCharacter();
         // Idea - don't have inherited classes, have extentions
         // just for the template/ final touches for each
+        document.querySelectorAll('textarea, input, select').forEach((x) => {
+            x.addEventListener('change', (y) => { character.updateCharacter(); character.updateCharacterSheet(); });
+        });
     </script>
 </body>
 
