@@ -294,7 +294,7 @@
                     let thisOption = document.createElement("OPTION")
                     thisOption.value = i;
                     thisOption.selected = (i == this.current) ? " selected" : "";
-                    thisOption.innerHTML = filledCircle.repeat(i) + emptyCircle.repeat(this.max - i);
+                    thisOption.innerHTML = filledCircle.repeat(i) + emptyCircle.repeat(Math.max(this.max - i, 0));
                     thisSelect.appendChild(thisOption)
                 }
 
@@ -351,7 +351,7 @@
                 }
                 this.querySelector('.label').innerText = this.name;
                 this.querySelector('.label').style = "display: grid";
-                this.querySelector('.value').innerHTML = filledCircle.repeat(this.value) + emptyCircle.repeat(maxPlus1 - this.value);
+                this.querySelector('.value').innerHTML = filledCircle.repeat(this.value) + emptyCircle.repeat(Math.max(maxPlus1 - this.value,0));
                 this.querySelector('.value').style = "display:grid;justify-content: end;";
             }
         }
@@ -676,7 +676,7 @@
             <h2>Introduction</h2>
                 <p>INTRODUCTION TEXT</p>
         </section>
-    -->
+        -->
         <input type="radio" style="visibility:hidden;" name="tabopen" id="class">
         <input type="radio" style="visibility:hidden;" name="tabopen" id="basics">
         <input type="radio" style="visibility:hidden;" name="tabopen" id="paths">
@@ -964,7 +964,8 @@
                 });
             </script>
             <fieldset id="skill-selection">
-                <legend>Skills <span><alert-bar name="skill_points" message="6 skill points left"></alert-bar></span>
+                <legend>Skills <span><alert-bar name="skill_points" max="6" message="X skill points left"
+                    watch="#skill-selection dot-selector"></alert-bar></span>
                 </legend>
                 <div></div>
             </fieldset>
@@ -1344,11 +1345,11 @@
                     "short_aspiration_2": "",
                     "long_aspiration": "",
                 }
-                this.paths = [
-                    { "name": "origin", "path": new StandardPath() },
-                    { "name": "role", "path": new StandardPath() },
-                    { "name": "society", "path": new StandardPath() }
-                ]
+                this.paths = {
+                    "origin": new StandardPath(),
+                    "role":new StandardPath(),
+                    "society": new StandardPath()
+                }
                 this.skills = {
                     "Aim": 0,
                     "Athletics": 0,
@@ -1390,6 +1391,22 @@
                 this.updateCharacter();
             }
 
+            updateAllPaths() {
+                let paths = Object.keys(this.paths);
+                paths.forEach((path) => {
+                    this.paths[path].name = document.getElementById(path + "_path").value
+                    this.paths[path].skills = []
+                    for (let i=1;i<5;i++) {
+                        this.paths[path].skills[i-1] = 
+                        {
+                            "name" : document.getElementById(`${path}_skill_${i}_name`).value,
+                            "dots" : parseInt(document.getElementById(`${path}_skill_${i}_value`).value,10)
+                        }
+                    }
+                    console.log(path);
+                })
+
+            }
             updateSkillsLists() {
                 let skillsBar = Object.keys(this.skills).join("|")
                 document.querySelectorAll("repeat-selector[name*='_skill_']").forEach((x) => {
@@ -1398,11 +1415,10 @@
 
                 let skillBox = document.querySelector("#skill-selection div")
                 skillBox.innerHTML = "";
-
                 // Skill selection
                 Object.keys(this.skills).forEach((x) => {
                     skillBox.innerHTML += `
-                <div class="skill-and-dots">
+                <div class="skill-and-dots" data-skill="${x}">
                     <span>${x}</span>
                     <input type="text" name="speciality[${x}]" value="" />
                     <dot-selector name="skill_value[${x}]" max="5"></dot-selector>
@@ -1421,9 +1437,19 @@
                     "short_aspiration_2": document.getElementById("aspiration_short_2").value,
                     "long_aspiration": document.getElementById("aspiration_long").value,
                 }
+                // Path selection
+                this.updateAllPaths();
                 // Skills (remember to add in all locations skills can change)
                 Object.keys(this.skills).forEach((x) => {
-                    this.skills[x] = document.querySelector(`dot-selector[name='skill_value[${x}]']`)?.value ?? 0;
+                    this.skills[x] = 
+                        parseInt(document.querySelector(`dot-selector[name='skill_value[${x}]']`)?.value ?? "0",10);
+                })
+                Object.keys(this.paths).forEach((x) => {
+                    this.paths[x].skills.forEach((y) => {
+                        if (typeof this.skills[y.name] != "undefined") {
+                            this.skills[y.name] += y.dots;
+                        }
+                    })
                 })
             }
             updateCharacterSheet() {
