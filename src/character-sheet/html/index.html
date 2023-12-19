@@ -970,7 +970,7 @@
                 <div></div>
             </fieldset>
             <style>
-                #attribute-layout {
+                .attribute-layout {
                     display: grid;
                     grid-template-areas:
                         '. mental sp1a physical spa social'
@@ -992,9 +992,13 @@
                 }
 
                 .check:nth-of-type(2n+4),
-                .mental-column:nth-of-type(2n+5),
-                .physical-column:nth-of-type(2n+4),
-                .social-column:is(:nth-of-type(2n+5)),
+                dot-label.mental-column:nth-of-type(odd),
+                label.mental-column:nth-of-type(odd):not(.stattop),
+                dot-label.social-column:nth-of-type(odd),
+                label.social-column:nth-of-type(odd):not(.stattop),
+                dot-label.physical-column:nth-of-type(even),
+                label.physical-column:nth-of-type(even):not(.stattop),
+                .attribute-layout>span:nth-of-type(odd),
                 .space-column:is(:nth-of-type(2n+5)) {
                     background: var(--table-alt-color);
                     color: var(--table-alt-text);
@@ -1002,13 +1006,15 @@
             </style>
             <fieldset id="attribute-selection">
                 <style>
-                    label.stat.stattop {
+                    label.stat.stattop,
+                    dot-label.stat.stattop {
                         border-top: thin solid var(--border-color);
                         padding-top: 5px;
                     }
 
                     label.stat,
-                    div.statbottom {
+                    div.statbottom,
+                    dot-label.stat {
                         border-left: thin solid var(--border-color);
                         border-right: thin solid var(--border-color);
                         padding: 0 5px;
@@ -1020,7 +1026,7 @@
                     }
                 </style>
                 <legend>Attributes</legend>
-                <div id="attribute-layout">
+                <div class="attribute-layout">
                     <label class="stat stattop mental-column" style="grid-area:mental"><select>
                             <option selected="selected">Primary</option>
                             <option>Secondary</option>
@@ -1254,13 +1260,47 @@
                         <div data-field="concept"><span>Concept:</span> <span class="value">...</span></div>
                     </div>
                     <div class="top2">
-                        <div><span>Origin Path:</span> <span>...</span></div>
+                        <div data-field="origin-path"><span>Origin:</span> <span class="value">...</span></div>
+                        <div data-field="role-path"><span>Role:</span> <span class="value">...</span></div>
+                        <div data-field="society-path"><span>Society:</span> <span class="value">...</span></div>
                     </div>
                     <div class="skillsheader header">SKILLS</div>
                     <div class="skillsc1">xx</div>
                     <div class="skillsc2">yy</div>
                     <div class="attrheader header">ATTRIBUTES</div>
-                    <div class="attributes">Mep</div>
+                    <div class="attributes">
+                        <div class="attribute-layout">
+                            <span style="grid-area: force; padding-top: 5px;">Force</span>
+                            <span style="grid-area: finesse">Finesse</span>
+                            <span style="grid-area: resilience">Resilience</span>
+                            <dot-label class="stat stattop mental-column" style="grid-area: intellect"
+                                    min="1" max="5" default="1" value="1" name="Intellect"></dot-label>
+                            <dot-label  class="stat mental-column" style="grid-area: cunning"
+                                    min="1" max="5" default="1" value="1" name="Cunning"></dot-label>
+                            <dot-label  class="stat mental-column" style="grid-area: resolve"
+                                    min="1" max="5" default="1" value="1" name="Resolve"></dot-label>
+                            <div class="mental-column statbottom" style="grid-area: mental-end">&nbsp;</div>
+                            <dot-label  class="stat stattop physical-column" style="grid-area: might"
+                                    min="1" max="5" default="1" value="1" name="Might"></dot-label>
+                            <dot-label  class="stat physical-column" style="grid-area: dexterity" min="1" max="5" default="1" value="1" name="Dexterity"></dot-label>
+                            <dot-label  class="stat physical-column" style="grid-area: stamina"
+                                    min="1" max="5" default="1" value="1" name="Stamina"></dot-label>
+                            <div class="physical-column statbottom" style="grid-area: physical-end">&nbsp;</div>
+                            <dot-label class="stat stattop social-column" style="grid-area: presence"
+                                    min="1" max="5" default="1" value="1" name="Presence"></dot-label>
+                            <dot-label class="stat social-column" style="grid-area: manipulation" min="1" max="5" default="1" value="1" name="Manipulation"></dot-label>
+                            <dot-label class="stat social-column" style="grid-area: composure"
+                                    min="1" max="5" default="1" value="1" name="Composure"></dot-label>
+                            <div class="social-column statbottom" style="grid-area: social-end">&nbsp;</div>
+                            <div class="space-column" style="grid-area: sp1a"></div>
+                            <div class="space-column" style="grid-area: sp1b"></div>
+                            <div class="space-column" style="grid-area: sp1c"></div>
+                            <div class="space-column" style="grid-area: sp1d"></div>
+                            <div class="space-column" style="grid-area: spa"></div>
+                            <div class="space-column" style="grid-area: spb"></div>
+                            <div class="space-column" style="grid-area: spc"></div>
+                            <div class="space-column" style="grid-area: spd"></div>
+                        </div></div>
                     <div class="injurhead header">INJURY CONDITIONS</div>
                     <div class="injuries">...</div>
                     <div class="facethead header">FACETS</div>
@@ -1460,6 +1500,14 @@
                         bob.innerText = this.basics[x];
                     }
                 })
+                // Paths
+                Object.keys(this.paths).forEach((x) => {
+                    let bob = document.querySelector(`*[data-field='${x}-path'] .value`);
+                    if (bob) {
+                        bob.innerText = this.paths[x].name;
+                    }
+                })
+                
 
                 // Skills
                 const skillsKeys = Object.keys(this.skills),
